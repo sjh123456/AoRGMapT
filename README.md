@@ -1,2 +1,0 @@
-# AoRGMapT
-AoRGMapT project
