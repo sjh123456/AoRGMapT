@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.AoRGMapT">
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+
+    <!--用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
+    <!--用于访问GPS定位-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
+    <!--用于获取运营商信息，用于支持提供运营商信息相关的接口-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <!--用于访问wifi网络信息，wifi信息会用于进行网络定位-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
+    <!--用于获取wifi的获取权限，wifi信息会用来进行网络定位-->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"></uses-permission>
+    <!--用于访问网络，网络定位需要上网-->
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <!--用于读取手机当前的状态-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+    <!--用于写入缓存数据到扩展存储卡-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <!--用于申请调用A-GPS模块-->
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"></uses-permission>
+    <!--如果设置了target >= 28 如果需要启动后台定位则必须声明这个权限-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!--如果您的应用需要后台定位权限，且有可能运行在Android Q设备上,并且设置了target>28，必须增加这个权限声明-->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:name=".BaseApplication"
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
+        android:theme="@style/Theme.Design.Light.NoActionBar">
+        <activity
+            android:name=".WasteDisposalActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ReclamationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".AchievementAcceptanceActivity"
+            android:exported="true" />
+        <activity
+            android:name=".FieldAcceptanceActivity"
+            android:exported="true" />
+        <activity
+            android:name=".QualityTestingActivity"
+            android:exported="true" />
+        <activity
+            android:name=".FracturingTestActivity"
+            android:exported="true" />
+        <activity
+            android:name=".CoreDescriptionActivity"
+            android:exported="true" />
+        <activity
+            android:name=".SiteConstructionInputActivity"
+            android:exported="true" />
+        <activity
+            android:name=".FieldConstructionLoggingActivity"
+            android:exported="true" />
+        <activity
+            android:name=".SiteConstructionWellDrillingActivity"
+            android:exported="true" />
+        <activity
+            android:name=".CommencementAcceptanceActivity"
+            android:exported="true" />
+        <activity
+            android:name=".WellSitePreparationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".WellLocationDeterminationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+<!--        <meta-data-->
+<!--            android:name="Aorgmapt-Map"-->
+<!--            android:value="4218dd1333225423ac15c8e512636b71"/>-->
+
+        <meta-data android:name="com.amap.api.v2.apikey" android:value="4218dd1333225423ac15c8e512636b71"/>
+
+        <service android:name="com.amap.api.location.APSService"></service>
+    </application>
+
+
+</manifest>
