@@ -15,11 +15,14 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.AoRGMapT.BaseApplication;
 import com.AoRGMapT.R;
 import com.AoRGMapT.adapter.PlanAdapter;
 import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.databinding.FragmentNotificationsBinding;
 import com.AoRGMapT.ui.dashboard.DashboardFragment;
+import com.AoRGMapT.ui.home.HomeFragment;
+import com.AoRGMapT.util.ChooseHomeDialog;
 import com.lcodecore.tkrefreshlayout.RefreshListenerAdapter;
 import com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout;
 
@@ -73,6 +76,22 @@ public class NotificationsFragment extends Fragment {
             }
         });
 
+        binding.ivSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ChooseHomeDialog.getInstance().showDialog(NotificationsFragment.this.getActivity(), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //刷新项目信息
+                        if (BaseApplication.currentProject != null) {
+                            //显示当前项目信息
+                            binding.tvName.setText(BaseApplication.currentProject.getProjectName());
+                        }
+                    }
+                });
+            }
+        });
+
         initData();
         //计划列表
         planAdapter = new PlanAdapter(planBeans);
@@ -97,5 +116,14 @@ public class NotificationsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (BaseApplication.currentProject != null) {
+            //显示当前项目信息
+            binding.tvName.setText(BaseApplication.currentProject.getProjectName());
+        }
     }
 }

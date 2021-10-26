@@ -2,14 +2,19 @@ package com.AoRGMapT.util;
 
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.AoRGMapT.BaseApplication;
 import com.AoRGMapT.bean.ProjectBean;
+import com.AoRGMapT.bean.ProjectResponseData;
+import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.ResponseDataList;
 import com.AoRGMapT.bean.UserInfo;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +27,7 @@ public class DataAcquisitionUtil {
     private final String account = "TEST1";
     private final String name = "地调局TEST1";
     private final String password = "1234";
+    private final String authorization = "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==";
 
     private String TAG = "DataAcquisitionUtil";
 
@@ -35,11 +41,19 @@ public class DataAcquisitionUtil {
     }
 
 
-    public void Login(String account, String name, String password, RequestUtil.OnResponseListener responseListener) {
+    /**
+     * 登陆接口
+     *
+     * @param account          账号
+     * @param name             账号名
+     * @param password         密码
+     * @param responseListener
+     */
+    public void Login(String account, String name, String password, RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>> responseListener) {
 
         Map<String, String> header = new HashMap<>();
         header.put("User-Type", "app");
-        header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+        header.put("Authorization", authorization);
 
         Map<String, String> param = new HashMap<>();
         param.put("grantType", "credible");
@@ -47,8 +61,8 @@ public class DataAcquisitionUtil {
         param.put("password", password);
         param.put("userName", name);
         param.put("tenantId", "100000");
-
-        RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/v1/token", param, header, responseListener, UserInfo.class);
+        RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/v1/token", param, header, responseListener, new TypeToken<ResponseDataItem<UserInfo>>() {
+        }.getType());
 
     }
 
@@ -58,31 +72,42 @@ public class DataAcquisitionUtil {
      *
      * @param responseListener
      */
-    public void fieldPlanProject(RequestUtil.OnResponseListener<ProjectBean> responseListener) {
+    public void fieldPlanProject(int pageSize, int current, RequestUtil.OnResponseListener<ProjectResponseData> responseListener) {
 
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
 
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+            header.put("Authorization", authorization);
             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/list", param, header, responseListener, ProjectBean.class);
+            param.put("pageSize", pageSize + "");
+            param.put("current", current + "");
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/page",
+                    param,
+                    header,
+                    responseListener, new TypeToken<ProjectResponseData>() {
+                    }.getType());
         } else {
-            Login(account, name, password, new RequestUtil.OnResponseListener<UserInfo>() {
+            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
                 @Override
-                public void onsuccess(Object obj) {
-                    if (obj instanceof UserInfo && obj != null) {
-                        UserInfo userInfo = (UserInfo) obj;
-                        if (!TextUtils.isEmpty(userInfo.getAccessToken())) {
+                public void onsuccess(ResponseDataItem<UserInfo> obj) {
+                    if (obj != null) {
+                        UserInfo userInfo = obj.getData();
+                        if (userInfo != null && !TextUtils.isEmpty(userInfo.getAccessToken())) {
+                            //更新用户信息
                             BaseApplication.userInfo = userInfo;
                             Map<String, String> header = new HashMap<>();
-                            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+                            header.put("Authorization", authorization);
                             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
                             Map<String, String> param = new HashMap<>();
-                            param.put("pageSize", "1");
-                            param.put("current", "1");
-                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/list", param, header, responseListener, ProjectBean.class);
+                            param.put("pageSize", pageSize + "");
+                            param.put("current", current + "");
+                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/page",
+                                    param,
+                                    header,
+                                    responseListener, new TypeToken<ProjectResponseData>() {
+                                    }.getType());
                         }
                     }
                 }

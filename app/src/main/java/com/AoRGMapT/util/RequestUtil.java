@@ -72,7 +72,7 @@ public class RequestUtil<T> {
     };
 
 
-    public void requestHttp(String url, Map<String, String> params, Map<String, String> header, OnResponseListener<T> onResponseListener, Class<T> classOfT) {
+    public void requestHttp(String url, Map<String, String> params, Map<String, String> header, OnResponseListener<T> onResponseListener, Type type) {
         mOnResponseListener = onResponseListener;
         OkHttpClient okHttpClient = new OkHttpClient();
         //http://121.36.58.193/blade-system/v1/token?grantType=credible&account=TEST1&password=1234&userName=地调局TEST1&tenantId=100000
@@ -117,23 +117,9 @@ public class RequestUtil<T> {
                     Log.d("TAG", "————》" + res);
                     if (response.code() == 200) {
                         Gson gson = new Gson();
-                        JsonObject responseObject = gson.fromJson(res, JsonObject.class);
-                        String data = responseObject.get("data").toString();
-                        Object json = null;
-
-                        json = new JSONTokener(data).nextValue();
-
                         Message message = new Message();
-                        if (json instanceof JSONArray) {
-
-                            Type type = new ParameterizedTypeImpl(classOfT);
-
-                            List<T> t = gson.fromJson(responseObject.get("data"), type);
-                            message.obj = t;
-                        } else {
-                            T t = gson.fromJson(responseObject.get("data"), classOfT);
-                            message.obj = t;
-                        }
+                        T t = gson.fromJson(res, type);
+                        message.obj = t;
                         message.what = 2;
                         handler.sendMessage(message);
                     } else {
@@ -251,7 +237,7 @@ public class RequestUtil<T> {
     }
 
     public interface OnResponseListener<T> {
-        void onsuccess(Object t);
+        void onsuccess(T t);
 
         void fail(String code, String message);
     }
