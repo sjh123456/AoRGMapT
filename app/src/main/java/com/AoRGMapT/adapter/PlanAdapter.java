@@ -77,22 +77,6 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
             }
         });
 
-        holder.tvWellNum.setText(item.getWellName());
-        holder.tvPlanClass.setText(item.getTaskType());
-        holder.tvComTime.setText(item.getRecordDate());
-        holder.tvPlanPeople.setText(item.getRecorder());
-        holder.tvUpdatePeople.setText(item.getUpdateUser());
-        holder.tvUpdateTime.setText(item.getUpdateTime());
-        holder.item.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent;
-                intent = new Intent(PlanAdapter.this.context, WellLocationDeterminationActivity.class);
-                intent.putExtra("id", item.getId());
-                context.startActivity(intent);
-            }
-        });
-
     }
 
     @Override
