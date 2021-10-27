@@ -193,6 +193,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         });
 
 
+
         setLocationInfo(BaseApplication.aMapLocation);
         LocationUtil.getInstance().startLocationAndCheckPermission(this, new AMapLocationListener() {
             @Override
