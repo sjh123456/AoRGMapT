@@ -11,26 +11,40 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.AoRGMapT.adapter.ImageAdapter;
 import com.AoRGMapT.bean.ImageBean;
+import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.WellLocationDeterminationBean;
+import com.AoRGMapT.bean.WellSitePreparationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
+import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //井场准备
 public class WellSitePreparationActivity extends AppCompatActivity {
+
+    private final String TAG = "TAG";
 
     //记录时间
     private EditText mEditTime;
@@ -63,16 +77,102 @@ public class WellSitePreparationActivity extends AppCompatActivity {
     //0水源情况 1通电情况 2 井场平整条件  3环保保障措施 4青苗补偿情况
     private int mChooseImageType = 0;
 
+
+    private TextView project_name;
+    private EditText well_name;
+    private EditText headwaters;
+    private EditText electrify;
+    private EditText well_pad_leveling;
+    private EditText environmental_protection_guarantee;
+    private EditText young_crops;
+    private EditText recorder;
+    private EditText ed_time;
+    private EditText remark;
+    private TextView tv_save;
+    private TextView tv_remove;
+
+
+    //当前项目的id
+    private String id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_well_site_preparation);
+
+        id = getIntent().getStringExtra("id");
+
         mEditTime = findViewById(R.id.ed_time);
         mGridWater = findViewById(R.id.grid_water);
         mGridPowerOn = findViewById(R.id.grid_power_on);
         mGridLevelingConditions = findViewById(R.id.grid_leveling_conditions);
         mGridEnvironmental = findViewById(R.id.grid_environmental);
         mGridYoungCrops = findViewById(R.id.grid_young_crops);
+
+
+        project_name = findViewById(R.id.project_name);
+        well_name = findViewById(R.id.well_name);
+        headwaters = findViewById(R.id.headwaters);
+        electrify = findViewById(R.id.electrify);
+        well_pad_leveling = findViewById(R.id.well_pad_leveling);
+        environmental_protection_guarantee = findViewById(R.id.environmental_protection_guarantee);
+        young_crops = findViewById(R.id.young_crops);
+        recorder = findViewById(R.id.recorder);
+        ed_time = findViewById(R.id.ed_time);
+        remark = findViewById(R.id.remark);
+        tv_save = findViewById(R.id.tv_save);
+        tv_remove = findViewById(R.id.tv_remove);
+
+
+        findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WellSitePreparationActivity.this.finish();
+            }
+        });
+
+
+        tv_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<String, String> map = new HashMap<>();
+                map.put("event_id", BaseApplication.currentProject.getId());
+                map.put("task_type", "井位确认");
+                map.put("well_name", well_name.getText().toString());
+                map.put("recorder", recorder.getText().toString());
+                map.put("record_data", mEditTime.getText().toString());
+                map.put("remark", remark.getText().toString());
+
+                WellSitePreparationBean bean = new WellSitePreparationBean();
+                bean.setElectrify(electrify.getText().toString());
+                bean.setHeadwaters(headwaters.getText().toString());
+                bean.setWell_pad_leveling(well_pad_leveling.getText().toString());
+                bean.setYoung_crops(young_crops.getText().toString());
+                bean.setEnvironmental_protection_guarantee(environmental_protection_guarantee.getText().toString());
+                map.put("extend_data", new Gson().toJson(bean));
+                DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                    @Override
+                    public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
+
+                        if (responseDataItem.isSuccess()) {
+                            WellSitePreparationActivity.this.finish();
+
+                        } else {
+                            Toast.makeText(WellSitePreparationActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void fail(String code, String message) {
+                        Toast.makeText(WellSitePreparationActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
+
+            }
+        });
+
 
         //交通情况的图片
         mWaterImageBeans.add(new ImageBean(null, null, 1));
@@ -197,8 +297,71 @@ public class WellSitePreparationActivity extends AppCompatActivity {
 
             }
         });
-
+        //设置项目名称和井号
+        if (BaseApplication.currentProject != null) {
+            project_name.setText(BaseApplication.currentProject.getProjectName());
+            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            recorder.setText(BaseApplication.userInfo.getUserName());
+        }
         setCurrentTime();
+
+        if (!TextUtils.isEmpty(id)) {
+
+            tv_remove.setVisibility(View.VISIBLE);
+            tv_remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                        @Override
+                        public void onsuccess(ResponseDataItem o) {
+                            if (o.isSuccess()) {
+                                WellSitePreparationActivity.this.finish();
+                            } else {
+                                Toast.makeText(WellSitePreparationActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+
+                        @Override
+                        public void fail(String code, String message) {
+                            Toast.makeText(WellSitePreparationActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+
+            DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
+                    if (planBeanResponseDataItem != null) {
+                        PlanBean planBean = planBeanResponseDataItem.getData();
+                        if (planBean != null) {
+                            well_name.setText(planBean.getWellName());
+                            recorder.setText(planBean.getRecorder());
+                            remark.setText(planBean.getRemark());
+                            mEditTime.setText(planBean.getCreateTime());
+                            WellSitePreparationBean sitePreparationBean = new Gson().fromJson(planBean.getExtendData(), WellSitePreparationBean.class);
+                            if (sitePreparationBean != null) {
+                                electrify.setText(sitePreparationBean.getElectrify());
+                                young_crops.setText(sitePreparationBean.getYoung_crops());
+                                environmental_protection_guarantee.setText(sitePreparationBean.getEnvironmental_protection_guarantee());
+                                headwaters.setText(sitePreparationBean.getHeadwaters());
+                                well_pad_leveling.setText(sitePreparationBean.getWell_pad_leveling());
+                            }
+                        }
+                    }
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "项目详情请求失败");
+                }
+            });
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
     }
 
 
@@ -242,13 +405,13 @@ public class WellSitePreparationActivity extends AppCompatActivity {
                     } else if (mChooseImageType == 1) {
                         mPowerOnImageBeans.add(mPowerOnImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
                         mGridPowerOn.setAdapter(mPowerOnImageAdapter);
-                    } else if(mChooseImageType==2){
+                    } else if (mChooseImageType == 2) {
                         mLevelingConditionsImageBeans.add(mLevelingConditionsImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
                         mGridLevelingConditions.setAdapter(mLevelingConditionsImageAdapter);
-                    } else if(mChooseImageType==3){
+                    } else if (mChooseImageType == 3) {
                         mEnvironmentalImageBeans.add(mEnvironmentalImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
                         mGridEnvironmental.setAdapter(mEnvironmentalImageAdapter);
-                    } else if(mChooseImageType==4){
+                    } else if (mChooseImageType == 4) {
                         mYoungCropImageBeans.add(mYoungCropImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
                         mGridYoungCrops.setAdapter(mYoungCropImageAdapter);
                     }
@@ -266,13 +429,13 @@ public class WellSitePreparationActivity extends AppCompatActivity {
                 } else if (mChooseImageType == 1) {
                     mPowerOnImageBeans.add(mPowerOnImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridPowerOn.setAdapter(mPowerOnImageAdapter);
-                } else if(mChooseImageType==2){
+                } else if (mChooseImageType == 2) {
                     mLevelingConditionsImageBeans.add(mLevelingConditionsImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridLevelingConditions.setAdapter(mLevelingConditionsImageAdapter);
-                }else if(mChooseImageType==3){
+                } else if (mChooseImageType == 3) {
                     mEnvironmentalImageBeans.add(mEnvironmentalImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridEnvironmental.setAdapter(mEnvironmentalImageAdapter);
-                }else if(mChooseImageType==4){
+                } else if (mChooseImageType == 4) {
                     mYoungCropImageBeans.add(mYoungCropImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridYoungCrops.setAdapter(mYoungCropImageAdapter);
                 }

@@ -2,6 +2,7 @@ package com.AoRGMapT.ui.notifications;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +20,13 @@ import com.AoRGMapT.BaseApplication;
 import com.AoRGMapT.R;
 import com.AoRGMapT.adapter.PlanAdapter;
 import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.PlanResponseData;
 import com.AoRGMapT.databinding.FragmentNotificationsBinding;
 import com.AoRGMapT.ui.dashboard.DashboardFragment;
 import com.AoRGMapT.ui.home.HomeFragment;
 import com.AoRGMapT.util.ChooseHomeDialog;
+import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.RequestUtil;
 import com.lcodecore.tkrefreshlayout.RefreshListenerAdapter;
 import com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout;
 
@@ -31,10 +35,16 @@ import java.util.List;
 
 public class NotificationsFragment extends Fragment {
 
+    private final String TAG = "NotificationsFragment";
+
+
     private NotificationsViewModel notificationsViewModel;
     private FragmentNotificationsBinding binding;
     private PlanAdapter planAdapter;
     private List<PlanBean> planBeans = new ArrayList<>();
+
+    private int pageSize = 5;
+    private int current = 1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -56,23 +66,15 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onRefresh(TwinklingRefreshLayout refreshLayout) {
                 super.onRefresh(refreshLayout);
-                new Handler().postDelayed(() -> {
-                    initData();
-                    planAdapter.notifyDataSetChanged();
-                    Toast.makeText(NotificationsFragment.this.getContext(), "下拉刷新", Toast.LENGTH_SHORT).show();
-                    refreshLayout.finishRefreshing();
-                }, 1000);
+                initData(false, true);
+                Toast.makeText(NotificationsFragment.this.getContext(), "下拉加载", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onLoadMore(TwinklingRefreshLayout refreshLayout) {
                 super.onLoadMore(refreshLayout);
-                new Handler().postDelayed(() -> {
-                    Toast.makeText(NotificationsFragment.this.getContext(), "上拉加载", Toast.LENGTH_SHORT).show();
-                    initData();
-                    planAdapter.notifyDataSetChanged();
-                    refreshLayout.finishLoadmore();
-                }, 1000);
+                Toast.makeText(NotificationsFragment.this.getContext(), "上拉加载", Toast.LENGTH_SHORT).show();
+                initData(true, false);
             }
         });
 
@@ -86,32 +88,72 @@ public class NotificationsFragment extends Fragment {
                         if (BaseApplication.currentProject != null) {
                             //显示当前项目信息
                             binding.tvName.setText(BaseApplication.currentProject.getProjectName());
+                            initData(false, true);
                         }
                     }
                 });
             }
         });
 
-        initData();
         //计划列表
-        planAdapter = new PlanAdapter(planBeans);
+        planAdapter = new PlanAdapter(planBeans,this.getContext());
         LinearLayoutManager layoutManager = new LinearLayoutManager(NotificationsFragment.this.getContext());
         binding.rlPlan.setLayoutManager(layoutManager);
         binding.rlPlan.setAdapter(planAdapter);
-        planAdapter.notifyDataSetChanged();
+        initData(false, false);
 
         return root;
     }
 
-    private void initData() {
+    /**
+     * 获取数据
+     *
+     * @param load
+     * @param refresh
+     */
+    private void initData(boolean load, boolean refresh) {
 
-        for (int i = 0; i < 10; i++) {
-            PlanBean projectBean = new PlanBean(false);
-            planBeans.add(projectBean);
+        if (BaseApplication.currentProject != null) {
+
+            if (load) {
+                current++;
+            } else if (refresh) {
+                current = 1;
+                planBeans.clear();
+            }
+
+            DataAcquisitionUtil.getInstance().detailPageByJson(BaseApplication.currentProject.getId(), pageSize, current, new RequestUtil.OnResponseListener<PlanResponseData>() {
+                @Override
+                public void onsuccess(PlanResponseData planResponseData) {
+                    if (planResponseData != null && planResponseData.getData() != null) {
+                        if (planResponseData.getData().getRecords() != null) {
+                            planBeans.addAll(planResponseData.getData().getRecords());
+                        }
+                    }
+                    if (load) {
+                        binding.lingrefresh.finishLoadmore();
+                        if(planBeans.size()==planResponseData.getData().getTotal()){
+                            binding.lingrefresh.setEnableLoadmore(false);
+                        }
+                    } else if (refresh) {
+                        binding.lingrefresh.finishRefreshing();
+                        binding.lingrefresh.setEnableLoadmore(true);
+                    }
+
+                    planAdapter.notifyDataSetChanged();
+
+
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "获取项目任务列表失败");
+                }
+            });
         }
 
     }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();

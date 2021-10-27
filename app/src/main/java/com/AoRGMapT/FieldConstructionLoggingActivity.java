@@ -11,28 +11,42 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.AoRGMapT.adapter.ImageAdapter;
+import com.AoRGMapT.bean.FieldConstructionLoggingBean;
 import com.AoRGMapT.bean.ImageBean;
+import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
+import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 测井
  */
 public class FieldConstructionLoggingActivity extends AppCompatActivity {
+
+    private final String TAG = "FieldConstructionLoggingActivity";
 
     //记录时间
     private EditText mEditTime;
@@ -56,14 +70,88 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
     //0早会记录 1分段测井曲线 2 现场照片 
     private int mChooseImageType = 0;
 
+    //当前项目的id
+    private String id;
+
+    private TextView project_name;
+    private EditText well_name;
+    private EditText horizon;
+    private EditText top_boundary_depth;
+    private EditText bottom_boundary_depth;
+    private EditText thickness;
+    private EditText interpretation_conclusion;
+    private EditText recorder;
+    private EditText remark;
+    private TextView tv_save;
+    private TextView tv_remove;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_field_construction_logging);
+        id = getIntent().getStringExtra("id");
+
         mEditTime = findViewById(R.id.ed_time);
         mGridMorningMeeting = findViewById(R.id.grid_morning_meeting);
         mGridSubsection = findViewById(R.id.grid_subsection);
         mGridScene = findViewById(R.id.grid_scene);
+        project_name = findViewById(R.id.project_name);
+        well_name = findViewById(R.id.well_name);
+        horizon = findViewById(R.id.horizon);
+        top_boundary_depth = findViewById(R.id.top_boundary_depth);
+        bottom_boundary_depth = findViewById(R.id.bottom_boundary_depth);
+        thickness = findViewById(R.id.thickness);
+        interpretation_conclusion = findViewById(R.id.interpretation_conclusion);
+        recorder = findViewById(R.id.recorder);
+        remark = findViewById(R.id.remark);
+        tv_save = findViewById(R.id.tv_save);
+        tv_remove = findViewById(R.id.tv_remove);
+        findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FieldConstructionLoggingActivity.this.finish();
+            }
+        });
+        tv_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Map<String, String> map = new HashMap<>();
+                map.put("event_id", BaseApplication.currentProject.getId());
+                map.put("task_type", "井位确认");
+                map.put("well_name", well_name.getText().toString());
+                map.put("recorder", recorder.getText().toString());
+                map.put("record_data", mEditTime.getText().toString());
+                map.put("remark", remark.getText().toString());
+                FieldConstructionLoggingBean extend_data = new FieldConstructionLoggingBean();
+                extend_data.setHorizon(horizon.getText().toString());
+                extend_data.setThickness(thickness.getText().toString());
+                extend_data.setBottom_boundary_depth(bottom_boundary_depth.getText().toString());
+                extend_data.setInterpretation_conclusion(interpretation_conclusion.getText().toString());
+                extend_data.setTop_boundary_depth(top_boundary_depth.getText().toString());
+
+                map.put("extend_data", new Gson().toJson(extend_data));
+                DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                    @Override
+                    public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
+
+                        if (responseDataItem.isSuccess()) {
+                            FieldConstructionLoggingActivity.this.finish();
+
+                        } else {
+                            Toast.makeText(FieldConstructionLoggingActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void fail(String code, String message) {
+                        Toast.makeText(FieldConstructionLoggingActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
+            }
+        });
 
         setCurrentTime();
 
@@ -140,6 +228,71 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
 
             }
         });
+
+        //设置项目名称和井号
+        if (BaseApplication.currentProject != null) {
+            project_name.setText(BaseApplication.currentProject.getProjectName());
+            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            recorder.setText(BaseApplication.userInfo.getUserName());
+        }
+
+        if (!TextUtils.isEmpty(id)) {
+
+            tv_remove.setVisibility(View.VISIBLE);
+            tv_remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                        @Override
+                        public void onsuccess(ResponseDataItem o) {
+                            if (o.isSuccess()) {
+                                FieldConstructionLoggingActivity.this.finish();
+                            } else {
+                                Toast.makeText(FieldConstructionLoggingActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+
+                        @Override
+                        public void fail(String code, String message) {
+                            Toast.makeText(FieldConstructionLoggingActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+
+            DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
+                    if (planBeanResponseDataItem != null) {
+                        PlanBean planBean = planBeanResponseDataItem.getData();
+                        if (planBean != null) {
+                            well_name.setText(planBean.getWellName());
+                            recorder.setText(planBean.getRecorder());
+                            remark.setText(planBean.getRemark());
+                            mEditTime.setText(planBean.getCreateTime());
+                            FieldConstructionLoggingBean bean = new Gson().fromJson(planBean.getExtendData(), FieldConstructionLoggingBean.class);
+                            if (bean != null) {
+                                horizon.setText(bean.getHorizon());
+                                bottom_boundary_depth.setText(bean.getBottom_boundary_depth());
+                                thickness.setText(bean.getThickness());
+                                interpretation_conclusion.setText(bean.getInterpretation_conclusion());
+                                top_boundary_depth.setText(bean.getTop_boundary_depth());
+                            }
+                        }
+                    }
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "项目详情请求失败");
+                }
+            });
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
     }
 
     /**

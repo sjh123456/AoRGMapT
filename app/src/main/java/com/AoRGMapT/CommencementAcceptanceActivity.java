@@ -11,28 +11,41 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.AoRGMapT.adapter.ImageAdapter;
 import com.AoRGMapT.bean.ImageBean;
+import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
+import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 开工验收
  */
 public class CommencementAcceptanceActivity extends AppCompatActivity {
+
+    private final String TAG = "CommencementAcceptanceActivity";
 
     //记录时间
     private EditText mEditTime;
@@ -60,15 +73,74 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
     //0验收意见与专家名单 1环评记录 2 现场照片 3成果验收记录
     private int mChooseImageType = 0;
 
+
+    //当前项目的id
+    private String id;
+
+    private EditText well_name;
+    private TextView project_name;
+    private EditText recorder;
+    private TextView remark;
+    private TextView tv_save;
+    private TextView tv_remove;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        id = getIntent().getStringExtra("id");
         setContentView(R.layout.activity_commencement_acceptance);
         mEditTime = findViewById(R.id.ed_time);
         mGridCheck = findViewById(R.id.grid_check);
         mGridEia = findViewById(R.id.grid_eia);
         mGridScene = findViewById(R.id.grid_scene);
         mGridRectification = findViewById(R.id.grid_rectification);
+
+        well_name = findViewById(R.id.well_name);
+        project_name = findViewById(R.id.project_name);
+        recorder = findViewById(R.id.recorder);
+        remark = findViewById(R.id.remark);
+        tv_save = findViewById(R.id.tv_save);
+        tv_remove = findViewById(R.id.tv_remove);
+        findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CommencementAcceptanceActivity.this.finish();
+            }
+        });
+        tv_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Map<String, String> map = new HashMap<>();
+                map.put("event_id", BaseApplication.currentProject.getId());
+                map.put("task_type", "开工验收");
+                map.put("well_name", well_name.getText().toString());
+                map.put("recorder", recorder.getText().toString());
+                map.put("record_data", mEditTime.getText().toString());
+                map.put("remark", remark.getText().toString());
+                DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                    @Override
+                    public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
+
+                        if (responseDataItem.isSuccess()) {
+                            CommencementAcceptanceActivity.this.finish();
+
+                        } else {
+                            Toast.makeText(CommencementAcceptanceActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void fail(String code, String message) {
+                        Toast.makeText(CommencementAcceptanceActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
+            }
+        });
 
         setCurrentTime();
 
@@ -169,6 +241,64 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
 
             }
         });
+
+        //设置项目名称和井号
+        if (BaseApplication.currentProject != null) {
+            project_name.setText(BaseApplication.currentProject.getProjectName());
+            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            recorder.setText(BaseApplication.userInfo.getUserName());
+        }
+
+        if (!TextUtils.isEmpty(id)) {
+
+            tv_remove.setVisibility(View.VISIBLE);
+            tv_remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                        @Override
+                        public void onsuccess(ResponseDataItem o) {
+                            if (o.isSuccess()) {
+                                CommencementAcceptanceActivity.this.finish();
+                            } else {
+                                Toast.makeText(CommencementAcceptanceActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+
+                        @Override
+                        public void fail(String code, String message) {
+                            Toast.makeText(CommencementAcceptanceActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+
+            DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
+                    if (planBeanResponseDataItem != null) {
+                        PlanBean planBean = planBeanResponseDataItem.getData();
+                        if (planBean != null) {
+                            well_name.setText(planBean.getWellName());
+                            recorder.setText(planBean.getRecorder());
+                            remark.setText(planBean.getRemark());
+                            mEditTime.setText(planBean.getCreateTime());
+
+                        }
+                    }
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "项目详情请求失败");
+                }
+            });
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -213,7 +343,7 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
                     } else if (mChooseImageType == 2) {
                         mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
                         mGridScene.setAdapter(mSceneImageAdapter);
-                    }else if (mChooseImageType == 3) {
+                    } else if (mChooseImageType == 3) {
                         mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
                         mGridRectification.setAdapter(mRectificationImageAdapter);
                     }
@@ -232,9 +362,9 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
                     mEiaImageBeans.add(mEiaImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridEia.setAdapter(mEiaImageAdapter);
                 } else if (mChooseImageType == 2) {
-                    mSceneImageBeans.add(mSceneImageBeans.size() - 1,new ImageBean(null, bitmap, 0));
+                    mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridScene.setAdapter(mSceneImageAdapter);
-                }else if (mChooseImageType == 3) {
+                } else if (mChooseImageType == 3) {
                     mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
                     mGridRectification.setAdapter(mRectificationImageAdapter);
                 }

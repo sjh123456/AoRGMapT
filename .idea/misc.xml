@@ -5,6 +5,8 @@
       <map>
         <entry key="../../Library/Android/sdk/platforms/android-31/data/res/drawable/edit_text.xml" value="0.34270833333333334" />
         <entry key="app/src/main/res/drawable/bluebox.xml" value="0.3374358974358974" />
+        <entry key="app/src/main/res/drawable/btn_1296db_background.xml" value="0.321025641025641" />
+        <entry key="app/src/main/res/drawable/btn_A52A2A_background.xml" value="0.321025641025641" />
         <entry key="app/src/main/res/drawable/complete_background.xml" value="0.3374358974358974" />
         <entry key="app/src/main/res/drawable/edit_background.xml" value="0.24722222222222223" />
         <entry key="app/src/main/res/drawable/edtextfield_disabled.xml" value="0.24722222222222223" />
@@ -28,7 +30,7 @@
         <entry key="app/src/main/res/layout/activity_site_construction.xml" value="0.5" />
         <entry key="app/src/main/res/layout/activity_site_construction_input.xml" value="0.3265625" />
         <entry key="app/src/main/res/layout/activity_waste_disposal.xml" value="0.5" />
-        <entry key="app/src/main/res/layout/activity_well_site_preparation.xml" value="0.5" />
+        <entry key="app/src/main/res/layout/activity_well_site_preparation.xml" value="0.43148148148148147" />
         <entry key="app/src/main/res/layout/dialog_bottom_image.xml" value="0.15881458966565348" />
         <entry key="app/src/main/res/layout/dialog_choose_home.xml" value="0.5" />
         <entry key="app/src/main/res/layout/dialog_choose_home_item.xml" value="0.5" />

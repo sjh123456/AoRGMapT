@@ -66,7 +66,7 @@ public class ResponseDataList {
 
     public class DataItem<E> {
 
-        private List<ProjectBean> records;
+        private List<E> records;
         private int total;
         private int size;
         private int current;
@@ -78,11 +78,11 @@ public class ResponseDataList {
         private boolean searchCount;
         private int pages;
 
-        public List<ProjectBean> getRecords() {
+        public List<E> getRecords() {
             return records;
         }
 
-        public void setRecords(List<ProjectBean> records) {
+        public void setRecords(List<E> records) {
             this.records = records;
         }
 

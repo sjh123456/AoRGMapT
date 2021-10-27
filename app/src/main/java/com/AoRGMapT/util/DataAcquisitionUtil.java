@@ -4,6 +4,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.AoRGMapT.BaseApplication;
+import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.PlanResponseData;
 import com.AoRGMapT.bean.ProjectBean;
 import com.AoRGMapT.bean.ProjectResponseData;
 import com.AoRGMapT.bean.ResponseDataItem;
@@ -125,29 +127,44 @@ public class DataAcquisitionUtil {
      *
      * @param responseListener
      */
-    public void detailPageByJson(String projectId, RequestUtil.OnResponseListener responseListener) {
+    public void detailPageByJson(String projectId, int pageSize, int current, RequestUtil.OnResponseListener<PlanResponseData> responseListener) {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+            header.put("Authorization", authorization);
             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("projectId", projectId);
             param.put("column", "recordDate");
-            param.put("pageSize", "20");
-            param.put("current", "1");
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailPageByJson", param, header, responseListener, List.class);
+            param.put("pageSize", pageSize + "");
+            param.put("current", current + "");
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailPageByJson",
+                    param, header, responseListener,
+                    new TypeToken<PlanResponseData>() {
+                    }.getType());
         } else {
-            Login("TEST1", "地调局TEST1", "1234", new RequestUtil.OnResponseListener() {
+            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
                 @Override
-                public void onsuccess(Object o) {
-                    Map<String, String> header = new HashMap<>();
-                    header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
-                    header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-                    Map<String, String> param = new HashMap<>();
-                    param.put("projectId", projectId);
-                    param.put("column", "recordDate");
-                    RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailPageByJson", param, header, responseListener, List.class);
+                public void onsuccess(ResponseDataItem<UserInfo> obj) {
+                    if (obj != null) {
+                        UserInfo userInfo = obj.getData();
+                        if (userInfo != null && !TextUtils.isEmpty(userInfo.getAccessToken())) {
+                            //更新用户信息
+                            BaseApplication.userInfo = userInfo;
+                            Map<String, String> header = new HashMap<>();
+                            header.put("Authorization", authorization);
+                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+                            Map<String, String> param = new HashMap<>();
+                            param.put("projectId", projectId);
+                            param.put("column", "recordDate");
+                            param.put("pageSize", pageSize + "");
+                            param.put("current", current + "");
+                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailPageByJson",
+                                    param, header, responseListener,
+                                    new TypeToken<PlanResponseData>() {
+                                    }.getType());
+                        }
+                    }
                 }
 
                 @Override
@@ -164,25 +181,37 @@ public class DataAcquisitionUtil {
      *
      * @param responseListener
      */
-    public void detailByJson(String id, RequestUtil.OnResponseListener responseListener) {
+    public void detailByJson(String id, RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>> responseListener) {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+            header.put("Authorization", authorization);
             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("id", id);
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailByJson", param, header, responseListener, List.class);
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailByJson",
+                    param, header, responseListener,
+                    new TypeToken<ResponseDataItem<PlanBean>>() {
+                    }.getType());
         } else {
-            Login("TEST1", "地调局TEST1", "1234", new RequestUtil.OnResponseListener() {
+            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
                 @Override
-                public void onsuccess(Object o) {
-                    Map<String, String> header = new HashMap<>();
-                    header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
-                    header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-                    Map<String, String> param = new HashMap<>();
-                    param.put("id", id);
-                    RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailByJson", param, header, responseListener, List.class);
+                public void onsuccess(ResponseDataItem<UserInfo> o) {
+                    if (o != null) {
+                        UserInfo userInfo = o.getData();
+                        if (userInfo != null) {
+                            BaseApplication.userInfo = userInfo;
+                            Map<String, String> header = new HashMap<>();
+                            header.put("Authorization", authorization);
+                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+                            Map<String, String> param = new HashMap<>();
+                            param.put("id", id);
+                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailByJson",
+                                    param, header, responseListener,
+                                    new TypeToken<ResponseDataItem<PlanBean>>() {
+                                    }.getType());
+                        }
+                    }
                 }
 
                 @Override
@@ -199,45 +228,39 @@ public class DataAcquisitionUtil {
      *
      * @param responseListener
      */
-    public void submit(RequestUtil.OnResponseListener responseListener) {
+    public void submit(Map<String, String> param, RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>> responseListener) {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+            header.put("Authorization", authorization);
             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-            Map<String, String> param = new HashMap<>();
-            param.put("projectId", "1");
-            param.put("taskType", "测井");
-            param.put("wellName", "JH002");
-            param.put("location", "2000,2002");
-            param.put("sitePhotos", "0XXX0X3");
-            param.put("remark", "备注1111111");
-            param.put("id", "1449219348257411074");
-
-            RequestUtil.getInstance().requestRawHttp("http://121.36.58.193/blade-system/fieldInspectTask/submit", new Gson().toJson(param), header, responseListener, List.class);
+            RequestUtil.getInstance().requestRawHttp("http://121.36.58.193/blade-system/fieldInspectTask/submit",
+                    new Gson().toJson(param), header, responseListener,
+                    new TypeToken<ResponseDataItem<PlanBean>>() {
+                    }.getType());
         } else {
-//            Login("TEST1", "地调局TEST1", "1234", new RequestUtil.OnResponseListener<UserInfo>() {
-//                @Override
-//                public void onsuccess(UserInfo o) {
-//                    Map<String, String> header = new HashMap<>();
-//                    header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
-//                    header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-//                    Map<String, String> param = new HashMap<>();
-//                    param.put("projectId", "1");
-//                    param.put("taskType", "测井");
-//                    param.put("wellName", "JH002");
-//                    param.put("location", "2000,2002");
-//                    param.put("sitePhotos", "0XXX0X3");
-//                    param.put("remark", "备注1111111");
-//                    param.put("id", "1449219348257411074");
-//                    RequestUtil.getInstance().requestRawHttp("http://121.36.58.193/blade-system/fieldInspectTask/submit", new Gson().toJson(param), header, responseListener, List.class);
-//                }
-//
-//                @Override
-//                public void fail(String code, String message) {
-//                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
-//                }
-//            });
+            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<UserInfo> o) {
+                    if (o != null) {
+                        UserInfo userInfo = o.getData();
+                        if (userInfo != null) {
+                            BaseApplication.userInfo = userInfo;
+                            Map<String, String> header = new HashMap<>();
+                            header.put("Authorization", authorization);
+                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+                            RequestUtil.getInstance().requestRawHttp("http://121.36.58.193/blade-system/fieldInspectTask/submit", new Gson().toJson(param),
+                                    header, responseListener, new TypeToken<ResponseDataItem<PlanBean>>() {
+                                    }.getType());
+                        }
+                    }
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
+                }
+            });
         }
     }
 
@@ -247,38 +270,45 @@ public class DataAcquisitionUtil {
      *
      * @param responseListener
      */
-    public void remove(RequestUtil.OnResponseListener responseListener) {
+    public void remove(String ids, RequestUtil.OnResponseListener<ResponseDataItem> responseListener) {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
+            header.put("Authorization", authorization);
             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
-            param.put("ids", "1449219348257411074,1452213081220673537");
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove", param, header, responseListener, List.class);
+            param.put("ids", ids);
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove",
+                    param, header, responseListener,
+                    new TypeToken<ResponseDataItem>() {
+                    }.getType());
         } else {
-//            Login("TEST1", "地调局TEST1", "1234", new RequestUtil.OnResponseListener<UserInfo>() {
-//                @Override
-//                public void onsuccess(UserInfo o) {
-//                    Map<String, String> header = new HashMap<>();
-//                    header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
-//                    header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-//                    Map<String, String> param = new HashMap<>();
-//                    param.put("eventId", "4");
-//                    param.put("taskType", "测井");
-//                    param.put("wellName", "JH002");
-//                    param.put("location", "2000,2002");
-//                    param.put("sitePhotos", "0XXX0X3");
-//                    param.put("sitePhotos2", "0XXX0XX");
-//                    param.put("sitePhotos3", "");
-//                    RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove", param, header, responseListener, List.class);
-//                }
-//
-//                @Override
-//                public void fail(String code, String message) {
-//                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
-//                }
-//            });
+            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<UserInfo> o) {
+
+                    if (o != null) {
+                        UserInfo userInfo = o.getData();
+                        if (userInfo != null) {
+                            BaseApplication.userInfo = userInfo;
+                            Map<String, String> header = new HashMap<>();
+                            header.put("Authorization", authorization);
+                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+                            Map<String, String> param = new HashMap<>();
+                            param.put("ids", ids);
+                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove",
+                                    param, header, responseListener,
+                                    new TypeToken<ResponseDataItem>() {
+                                    }.getType());
+                        }
+                    }
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
+                }
+            });
         }
     }
 
