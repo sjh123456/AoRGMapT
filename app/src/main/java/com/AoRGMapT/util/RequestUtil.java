@@ -193,7 +193,7 @@ public class RequestUtil<T> {
     }
 
 
-    public void requestRawHttp(String url, String json, Map<String, String> header, OnResponseListener<T> onResponseListener, Class<T> classOfT) {
+    public void requestRawHttp(String url, String json, Map<String, String> header, OnResponseListener<T> onResponseListener, Type type) {
         OkHttpClient okHttpClient = new OkHttpClient();
         //http://121.36.58.193/blade-system/v1/token?grantType=credible&account=TEST1&password=1234&userName=地调局TEST1&tenantId=100000
         //http://api.k780.com:88/?app=weather.future&weaid=1&&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json
@@ -227,7 +227,7 @@ public class RequestUtil<T> {
                 if (response.code() == 200) {
                     Gson gson = new Gson();
                     JsonObject responseObject = gson.fromJson(res, JsonObject.class);
-                    T t = gson.fromJson(responseObject.get("data"), classOfT);
+                    T t = gson.fromJson(res, type);
                     onResponseListener.onsuccess(t);
                 } else {
                     onResponseListener.fail(response.code() + "", response.message());

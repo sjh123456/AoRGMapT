@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +24,14 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.AoRGMapT.adapter.ImageAdapter;
 import com.AoRGMapT.bean.ImageBean;
+import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
 import com.AoRGMapT.util.LocationUtil;
@@ -36,6 +41,7 @@ import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.gson.Gson;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
@@ -44,12 +50,16 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 井位确认
  */
 public class WellLocationDeterminationActivity extends AppCompatActivity {
+
+    private final String TAG = "WellLocationDeterminationActivity";
 
     //x坐标
     private EditText mEditX;
@@ -80,11 +90,33 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
     //0交通情况 1地理情况 2 居民情况
     private int mChooseImageType = 0;
 
+    private TextView project_name;
+    private EditText well_name;
+    private EditText ed_altitude;
+    private EditText ed_x;
+    private EditText ed_y;
+    private EditText ed_location;
+    private EditText structural_location;
+    private EditText administrative_region;
+    private EditText traffic;
+    private EditText geographical_situation;
+    private EditText residential_area;
+    private EditText recorder;
+    private EditText remark;
+    private TextView tv_save;
+    private TextView tv_remove;
+
+    //当前项目的id
+    private String id;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_data);
+
+
+        id = getIntent().getStringExtra("id");
 
         mEditX = findViewById(R.id.ed_x);
         mEditY = findViewById(R.id.ed_y);
@@ -94,7 +126,78 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         mGridTraffic = findViewById(R.id.grid_traffic);
         mGridGeography = findViewById(R.id.grid_geography);
         mGridResident = findViewById(R.id.grid_resident);
+        project_name = findViewById(R.id.project_name);
+        well_name = findViewById(R.id.well_name);
+        ed_altitude = findViewById(R.id.ed_altitude);
+        ed_x = findViewById(R.id.ed_x);
+        ed_y = findViewById(R.id.ed_y);
+        ed_location = findViewById(R.id.ed_location);
+        structural_location = findViewById(R.id.structural_location);
+        administrative_region = findViewById(R.id.administrative_region);
+        traffic = findViewById(R.id.traffic);
+        geographical_situation = findViewById(R.id.geographical_situation);
+        residential_area = findViewById(R.id.residential_area);
+        recorder = findViewById(R.id.recorder);
+        remark = findViewById(R.id.remark);
+        tv_save = findViewById(R.id.tv_save);
+        tv_remove = findViewById(R.id.tv_remove);
 
+        findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WellLocationDeterminationActivity.this.finish();
+            }
+        });
+        tv_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Map<String, String> map = new HashMap<>();
+                map.put("event_id", BaseApplication.currentProject.getId());
+                map.put("task_type", "井位确认");
+                map.put("well_name", well_name.getText().toString());
+                map.put("location", ed_location.getText().toString());
+                map.put("recorder", recorder.getText().toString());
+                map.put("record_data", mEditTime.getText().toString());
+                map.put("remark", remark.getText().toString());
+                WellLocationDeterminationBean extend_data = new WellLocationDeterminationBean();
+                extend_data.setAltitude(ed_altitude.getText().toString());
+                extend_data.setX(ed_x.getText().toString());
+                extend_data.setY(ed_y.getText().toString());
+                extend_data.setStructural_location(structural_location.getText().toString());
+                extend_data.setAdministrative_region(administrative_region.getText().toString());
+                extend_data.setTraffic(traffic.getText().toString());
+                extend_data.setGeographical_situation(geographical_situation.getText().toString());
+                extend_data.setResidential_area(residential_area.getText().toString());
+                map.put("extend_data", new Gson().toJson(extend_data));
+                DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                    @Override
+                    public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
+
+                        if (responseDataItem.isSuccess()) {
+                            WellLocationDeterminationActivity.this.finish();
+
+                        } else {
+                            Toast.makeText(WellLocationDeterminationActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void fail(String code, String message) {
+                        Toast.makeText(WellLocationDeterminationActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
+            }
+        });
+
+        tv_remove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
         setLocationInfo(BaseApplication.aMapLocation);
         LocationUtil.getInstance().startLocationAndCheckPermission(this, new AMapLocationListener() {
@@ -180,6 +283,76 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
 
             }
         });
+
+        //设置项目名称和井号
+        if (BaseApplication.currentProject != null) {
+            project_name.setText(BaseApplication.currentProject.getProjectName());
+            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            recorder.setText(BaseApplication.userInfo.getUserName());
+        }
+
+        if (!TextUtils.isEmpty(id)) {
+
+            tv_remove.setVisibility(View.VISIBLE);
+            tv_remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                        @Override
+                        public void onsuccess(ResponseDataItem o) {
+                            if (o.isSuccess()) {
+                                WellLocationDeterminationActivity.this.finish();
+                            } else {
+                                Toast.makeText(WellLocationDeterminationActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+
+                        @Override
+                        public void fail(String code, String message) {
+                            Toast.makeText(WellLocationDeterminationActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+
+            DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
+                    if (planBeanResponseDataItem != null) {
+                        PlanBean planBean = planBeanResponseDataItem.getData();
+                        if (planBean != null) {
+                            well_name.setText(planBean.getWellName());
+                            ed_location.setText(planBean.getLocation());
+                            recorder.setText(planBean.getRecorder());
+                            remark.setText(planBean.getRemark());
+                            mEditTime.setText(planBean.getCreateTime());
+                            WellLocationDeterminationBean determinationBean = new Gson().fromJson(planBean.getExtendData(), WellLocationDeterminationBean.class);
+                            if (determinationBean != null) {
+                                ed_altitude.setText(determinationBean.getAltitude());
+                                ed_x.setText(determinationBean.getX());
+                                ed_y.setText(determinationBean.getY());
+                                structural_location.setText(determinationBean.getStructural_location());
+                                administrative_region.setText(determinationBean.getAdministrative_region());
+                                traffic.setText(determinationBean.getTraffic());
+                                geographical_situation.setText(determinationBean.getGeographical_situation());
+                                residential_area.setText(determinationBean.getResidential_area());
+                            }
+                        }
+                    }
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "项目详情请求失败");
+                }
+            });
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
+
     }
 
     @Override
@@ -247,12 +420,13 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         if (aMapLocation != null && aMapLocation.getErrorCode() == 0 && aMapLocation.getAddress() != null && !TextUtils.isEmpty(aMapLocation.getAddress())) {
             //停止定位
             LocationUtil.getInstance().stopLocation();
-            mEditX.setText(aMapLocation.getLatitude() + "");
-            mEditY.setText(aMapLocation.getLongitude() + "");
-            mEditLocation.setText(aMapLocation.getAddress());
-            mEditAltitude.setText(aMapLocation.getAltitude() + "");
-
             BaseApplication.aMapLocation = aMapLocation;
+            if (!TextUtils.isEmpty(id)) {
+                mEditX.setText(aMapLocation.getLatitude() + "");
+                mEditY.setText(aMapLocation.getLongitude() + "");
+                mEditLocation.setText(aMapLocation.getAddress());
+                mEditAltitude.setText(aMapLocation.getAltitude() + "");
+            }
         }
 
 
