@@ -148,7 +148,7 @@ public class HomeFragment extends Fragment {
         binding.ivSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChooseHomeDialog.getInstance().showDialog(HomeFragment.this.getActivity(), new View.OnClickListener() {
+                ChooseHomeDialog.getInstance().showDialog(HomeFragment.this.getActivity(), true,new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //刷新项目信息

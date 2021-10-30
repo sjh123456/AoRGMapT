@@ -3,19 +3,27 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../../layout/custom_preview.xml" value="0.325" />
         <entry key="../../Library/Android/sdk/platforms/android-31/data/res/drawable/edit_text.xml" value="0.34270833333333334" />
         <entry key="app/src/main/res/drawable/bluebox.xml" value="0.3374358974358974" />
         <entry key="app/src/main/res/drawable/btn_1296db_background.xml" value="0.321025641025641" />
         <entry key="app/src/main/res/drawable/btn_A52A2A_background.xml" value="0.321025641025641" />
         <entry key="app/src/main/res/drawable/complete_background.xml" value="0.3374358974358974" />
+        <entry key="app/src/main/res/drawable/done_selector.xml" value="0.31574074074074077" />
         <entry key="app/src/main/res/drawable/edit_background.xml" value="0.24722222222222223" />
         <entry key="app/src/main/res/drawable/edtextfield_disabled.xml" value="0.24722222222222223" />
         <entry key="app/src/main/res/drawable/edtextfield_selected.xml" value="0.24722222222222223" />
         <entry key="app/src/main/res/drawable/greenbox.xml" value="0.3374358974358974" />
+        <entry key="app/src/main/res/drawable/ic_dashboard_black_24dp.xml" value="0.3260416666666667" />
+        <entry key="app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.3260416666666667" />
+        <entry key="app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.3260416666666667" />
         <entry key="app/src/main/res/drawable/imcomplete_background.xml" value="0.3374358974358974" />
         <entry key="app/src/main/res/drawable/main_background.xml" value="0.3374358974358974" />
+        <entry key="app/src/main/res/drawable/main_selector.xml" value="0.31574074074074077" />
+        <entry key="app/src/main/res/drawable/mine_selector.xml" value="0.31574074074074077" />
         <entry key="app/src/main/res/drawable/redbox.xml" value="0.3374358974358974" />
         <entry key="app/src/main/res/drawable/searchbbox.xml" value="0.3374358974358974" />
+        <entry key="app/src/main/res/drawable/todo_selector.xml" value="0.31574074074074077" />
         <entry key="app/src/main/res/drawable/white_concer8.xml" value="0.24722222222222223" />
         <entry key="app/src/main/res/layout/activity_achievement_acceptance.xml" value="0.3265625" />
         <entry key="app/src/main/res/layout/activity_chart.xml" value="0.13677811550151975" />
@@ -38,7 +46,8 @@
         <entry key="app/src/main/res/layout/dialog_choose_home_item.xml" value="0.5" />
         <entry key="app/src/main/res/layout/fragment_dashboard.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.335" />
-        <entry key="app/src/main/res/layout/fragment_notifications.xml" value="0.15881458966565348" />
+        <entry key="app/src/main/res/layout/fragment_mine.xml" value="0.5" />
+        <entry key="app/src/main/res/layout/fragment_notifications.xml" value="0.5" />
         <entry key="app/src/main/res/layout/grid_png_item.xml" value="0.5" />
         <entry key="app/src/main/res/layout/item_home_plan.xml" value="0.5" />
         <entry key="app/src/main/res/layout/item_home_project.xml" value="0.5" />

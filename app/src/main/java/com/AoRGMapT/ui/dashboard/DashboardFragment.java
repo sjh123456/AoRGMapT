@@ -82,7 +82,7 @@ public class DashboardFragment extends Fragment {
         binding.ivSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChooseHomeDialog.getInstance().showDialog(DashboardFragment.this.getActivity(), new View.OnClickListener() {
+                ChooseHomeDialog.getInstance().showDialog(DashboardFragment.this.getActivity(),true ,new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //刷新项目信息

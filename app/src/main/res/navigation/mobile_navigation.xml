@@ -22,4 +22,10 @@
         android:name="com.AoRGMapT.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/navigation_mine"
+        android:name="com.AoRGMapT.ui.mine.MineFragment"
+        android:label="我的"
+        tools:layout="@layout/fragment_mine" />
 </navigation>

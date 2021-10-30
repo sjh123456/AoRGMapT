@@ -34,7 +34,7 @@ public class ChooseHomeDialog {
     }
 
 
-    public void showDialog(Activity context, View.OnClickListener onClickListener) {
+    public void showDialog(Activity context, boolean isCurrent, View.OnClickListener onClickListener) {
         mDialog = new Dialog(context, R.style.ActionSheetDialogStyle);
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_choose_home, null, false);
         View llContent = view.findViewById(R.id.ll_content);
@@ -49,8 +49,11 @@ public class ChooseHomeDialog {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (BaseApplication.projectBeanList != null && BaseApplication.projectBeanList.size() > position) {
-                    BaseApplication.currentProject = BaseApplication.projectBeanList.get(position);
+                    if (isCurrent) {
+                        BaseApplication.currentProject = BaseApplication.projectBeanList.get(position);
+                    }
                     mDialog.dismiss();
+                    view.setTag(BaseApplication.projectBeanList.get(position));
                     onClickListener.onClick(view);
                 }
 

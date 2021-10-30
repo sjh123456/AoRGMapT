@@ -67,9 +67,10 @@
 
                         <ImageView
                             android:id="@+id/iv_switch"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:background="@drawable/project_switch" />
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:padding="5dp"
+                            android:src="@drawable/project_switch" />
                     </LinearLayout>
 
                     <LinearLayout

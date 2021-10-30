@@ -12,6 +12,7 @@ import com.AoRGMapT.bean.ProjectResponseData;
 import com.AoRGMapT.bean.ResponseDataItem;
 import com.AoRGMapT.bean.ResponseDataList;
 import com.AoRGMapT.bean.StatisticsProjectResponseData;
+import com.AoRGMapT.bean.TaskListResponseData;
 import com.AoRGMapT.bean.UpdateFileResponseData;
 import com.AoRGMapT.bean.UserInfo;
 import com.google.gson.Gson;
@@ -318,6 +319,29 @@ public class DataAcquisitionUtil {
                     Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
                 }
             });
+        }
+    }
+
+
+    /**
+     * 获取任务详情
+     *
+     * @param responseListener
+     */
+    public void getTasksList(String projectId, RequestUtil.OnResponseListener<TaskListResponseData> responseListener) {
+
+        if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
+            Map<String, String> header = new HashMap<>();
+            header.put("Authorization", authorization);
+            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            Map<String, String> param = new HashMap<>();
+            param.put("projectId", projectId);
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/getTasksList",
+                    param, header, responseListener,
+                    new TypeToken<TaskListResponseData>() {
+                    }.getType());
+        } else {
+            Log.e(TAG, "请先登陆账号");
         }
     }
 

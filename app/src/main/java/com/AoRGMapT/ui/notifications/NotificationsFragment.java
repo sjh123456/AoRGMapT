@@ -81,7 +81,7 @@ public class NotificationsFragment extends Fragment {
         binding.ivSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChooseHomeDialog.getInstance().showDialog(NotificationsFragment.this.getActivity(), new View.OnClickListener() {
+                ChooseHomeDialog.getInstance().showDialog(NotificationsFragment.this.getActivity(), true, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //刷新项目信息
@@ -96,7 +96,7 @@ public class NotificationsFragment extends Fragment {
         });
 
         //计划列表
-        planAdapter = new PlanAdapter(planBeans,this.getContext());
+        planAdapter = new PlanAdapter(planBeans, this.getContext());
         LinearLayoutManager layoutManager = new LinearLayoutManager(NotificationsFragment.this.getContext());
         binding.rlPlan.setLayoutManager(layoutManager);
         binding.rlPlan.setAdapter(planAdapter);
@@ -132,7 +132,7 @@ public class NotificationsFragment extends Fragment {
                     }
                     if (load) {
                         binding.lingrefresh.finishLoadmore();
-                        if(planBeans.size()==planResponseData.getData().getTotal()){
+                        if (planBeans.size() == planResponseData.getData().getTotal()) {
                             binding.lingrefresh.setEnableLoadmore(false);
                         }
                     } else if (refresh) {
@@ -141,7 +141,6 @@ public class NotificationsFragment extends Fragment {
                     }
 
                     planAdapter.notifyDataSetChanged();
-
 
 
                 }
@@ -154,6 +153,7 @@ public class NotificationsFragment extends Fragment {
         }
 
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

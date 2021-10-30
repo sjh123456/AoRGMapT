@@ -207,7 +207,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
-                ImageBean imageBean = mResidentImageBeans.get(position);
+                ImageBean imageBean = mTrafficImageBeans.get(position);
                 deleteImageList.add(imageBean.getId());
                 mTrafficImageBeans.remove(position);
                 mGridTraffic.setAdapter(mTrafficImageAdapter);
@@ -234,7 +234,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
-                ImageBean imageBean = mResidentImageBeans.get(position);
+                ImageBean imageBean = mGeographyImageBeans.get(position);
                 deleteImageList.add(imageBean.getId());
                 mGeographyImageBeans.remove(position);
                 mGridGeography.setAdapter(mGeographyImageAdapter);
@@ -318,7 +318,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
-                         mPlanBean = planBeanResponseDataItem.getData();
+                        mPlanBean = planBeanResponseDataItem.getData();
                         if (mPlanBean != null) {
                             wellName.setText(mPlanBean.getWellName());
                             ed_location.setText(mPlanBean.getLocation());
@@ -452,13 +452,25 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
     //新增图片
     private void addPhotos(String taskid, PlanBean planBean) {
         if (mTrafficImageBeans != null && mTrafficImageBeans.size() > 0) {
-            updatePhotos(taskid, "p1", mTrafficImageBeans, planBean.getFiles());
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles();
+            }
+            updatePhotos(taskid, "p1", mTrafficImageBeans, photoFiles);
         }
         if (mGeographyImageBeans != null && mGeographyImageBeans.size() > 0) {
-            updatePhotos(taskid, "p2", mGeographyImageBeans, planBean.getFiles2());
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles2();
+            }
+            updatePhotos(taskid, "p2", mGeographyImageBeans, photoFiles);
         }
         if (mResidentImageBeans != null && mResidentImageBeans.size() > 0) {
-            updatePhotos(taskid, "p3", mResidentImageBeans, planBean.getFiles3());
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles3();
+            }
+            updatePhotos(taskid, "p3", mResidentImageBeans, photoFiles);
         }
     }
 
@@ -470,9 +482,9 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             String fileids = "";
             for (int i = 0; i < deleteImageList.size(); i++) {
                 if (i == deleteImageList.size() - 1) {
-                    fileids = deleteImageList.get(i);
+                    fileids = fileids + deleteImageList.get(i);
                 } else {
-                    fileids = deleteImageList.get(i) + ",";
+                    fileids = fileids + deleteImageList.get(i) + ",";
                 }
 
             }
