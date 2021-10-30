@@ -88,7 +88,7 @@
 
 
                 <EditText
-                    android:id="@+id/well_name"
+                    android:id="@+id/wellName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"

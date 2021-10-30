@@ -1,5 +1,7 @@
 package com.AoRGMapT.bean;
 
+import android.text.TextUtils;
+
 public class ProjectBean {
 
     private int completedNum;
@@ -11,7 +13,7 @@ public class ProjectBean {
     private String updateTime;
     private int isDeleted;
     private int status;
-    private String  id;
+    private String id;
     private String year;
     private String projectName;
     private String projectGroup;
@@ -20,6 +22,26 @@ public class ProjectBean {
     private String remark;
     private String recorder;
     private String recordDate;
+    private String projectId;
+    private int taskCount;
+
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+
+    public int getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(int taskCount) {
+        this.taskCount = taskCount;
+    }
 
     public String getCreateUser() {
         return createUser;
@@ -70,6 +92,9 @@ public class ProjectBean {
     }
 
     public String getId() {
+        if (TextUtils.isEmpty(this.id)) {
+            return projectId;
+        }
         return id;
     }
 
@@ -145,7 +170,6 @@ public class ProjectBean {
         this.completedNum = completedNum;
         this.imcompletedNum = imcompletedNum;
     }
-
 
 
     public int getCompletedNum() {

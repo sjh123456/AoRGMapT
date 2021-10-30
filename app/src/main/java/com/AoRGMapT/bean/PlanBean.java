@@ -1,5 +1,6 @@
 package com.AoRGMapT.bean;
 
+import java.util.List;
 import java.util.Map;
 
 public class PlanBean {
@@ -40,7 +41,60 @@ public class PlanBean {
     private String sitePhotos4;
     private String sitePhotos6;
     private int status;
+    private List<PhotoFile> files;
+    private List<PhotoFile> files2;
+    private List<PhotoFile> files3;
+    private List<PhotoFile> files4;
+    private List<PhotoFile> files5;
+    private List<PhotoFile> files6;
 
+    public List<PhotoFile> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<PhotoFile> files) {
+        this.files = files;
+    }
+
+    public List<PhotoFile> getFiles2() {
+        return files2;
+    }
+
+    public void setFiles2(List<PhotoFile> files2) {
+        this.files2 = files2;
+    }
+
+    public List<PhotoFile> getFiles3() {
+        return files3;
+    }
+
+    public void setFiles3(List<PhotoFile> files3) {
+        this.files3 = files3;
+    }
+
+    public List<PhotoFile> getFiles4() {
+        return files4;
+    }
+
+    public void setFiles4(List<PhotoFile> files4) {
+        this.files4 = files4;
+    }
+
+    public List<PhotoFile> getFiles5() {
+        return files5;
+    }
+
+    public void setFiles5(List<PhotoFile> files5) {
+        this.files5 = files5;
+    }
+
+    public List<PhotoFile> getFiles6() {
+        return files6;
+    }
+
+    public void setFiles6(List<PhotoFile> files6) {
+        this.files6 = files6;
+    }
 
     public String getRecorder() {
         return recorder;
@@ -208,5 +262,162 @@ public class PlanBean {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+
+    public class PhotoFile {
+        private String fileName;
+        private String extendData;
+        private String filePath;
+        private Long updateUser;
+        private String bucketId;
+        private String remark;
+        private String updateTime;
+        private String source;
+        private String expiryDate;
+        private int sortNo;
+        private int isDeleted;
+        private String createTime;
+        private Long fileSize;
+        private String fileExtension;
+        private Long createUser;
+        private String id;
+        private String fileType;
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public String getExtendData() {
+            return extendData;
+        }
+
+        public void setExtendData(String extendData) {
+            this.extendData = extendData;
+        }
+
+        public String getFilePath() {
+            return filePath;
+        }
+
+        public void setFilePath(String filePath) {
+            this.filePath = filePath;
+        }
+
+        public Long getUpdateUser() {
+            return updateUser;
+        }
+
+        public void setUpdateUser(Long updateUser) {
+            this.updateUser = updateUser;
+        }
+
+        public String getBucketId() {
+            return bucketId;
+        }
+
+        public void setBucketId(String bucketId) {
+            this.bucketId = bucketId;
+        }
+
+        public String getRemark() {
+            return remark;
+        }
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
+
+        public String getUpdateTime() {
+            return updateTime;
+        }
+
+        public void setUpdateTime(String updateTime) {
+            this.updateTime = updateTime;
+        }
+
+        public String getSource() {
+            return source;
+        }
+
+        public void setSource(String source) {
+            this.source = source;
+        }
+
+        public String getExpiryDate() {
+            return expiryDate;
+        }
+
+        public void setExpiryDate(String expiryDate) {
+            this.expiryDate = expiryDate;
+        }
+
+        public int getSortNo() {
+            return sortNo;
+        }
+
+        public void setSortNo(int sortNo) {
+            this.sortNo = sortNo;
+        }
+
+        public int getIsDeleted() {
+            return isDeleted;
+        }
+
+        public void setIsDeleted(int isDeleted) {
+            this.isDeleted = isDeleted;
+        }
+
+        public String getCreateTime() {
+            return createTime;
+        }
+
+        public void setCreateTime(String createTime) {
+            this.createTime = createTime;
+        }
+
+        public Long getFileSize() {
+            return fileSize;
+        }
+
+        public void setFileSize(Long fileSize) {
+            this.fileSize = fileSize;
+        }
+
+        public String getFileExtension() {
+            return fileExtension;
+        }
+
+        public void setFileExtension(String fileExtension) {
+            this.fileExtension = fileExtension;
+        }
+
+        public Long getCreateUser() {
+            return createUser;
+        }
+
+        public void setCreateUser(Long createUser) {
+            this.createUser = createUser;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getFileType() {
+            return fileType;
+        }
+
+        public void setFileType(String fileType) {
+            this.fileType = fileType;
+        }
     }
 }

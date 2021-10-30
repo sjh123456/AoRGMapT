@@ -35,6 +35,7 @@ import okhttp3.Response;
 
 public class RequestUtil<T> {
 
+    private final static String TAG = "RequestUtil";
 
     //
     private static RequestUtil requestUtil;
@@ -54,20 +55,23 @@ public class RequestUtil<T> {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (msg.what == 1) {
-                if (mOnResponseListener != null) {
-                    String code = msg.getData().getString("code");
-                    String message = msg.getData().getString("message");
-                    mOnResponseListener.fail(code, message);
-                }
+            try {
+                super.handleMessage(msg);
+                if (msg.what == 1) {
+                    if (mOnResponseListener != null) {
+                        String code = msg.getData().getString("code");
+                        String message = msg.getData().getString("message");
+                        mOnResponseListener.fail(code, message);
+                    }
 
-            } else if (msg.what == 2) {
-                if (mOnResponseListener != null) {
-                    mOnResponseListener.onsuccess((T) msg.obj);
+                } else if (msg.what == 2) {
+                    if (mOnResponseListener != null) {
+                        mOnResponseListener.onsuccess((T) msg.obj);
+                    }
                 }
+            } catch (Exception ex) {
+                Log.e(TAG, ex.getMessage());
             }
-
         }
     };
 
@@ -117,8 +121,8 @@ public class RequestUtil<T> {
                     Log.d("TAG", "————》" + res);
                     if (response.code() == 200) {
                         Gson gson = new Gson();
-                        Message message = new Message();
                         T t = gson.fromJson(res, type);
+                        Message message = new Message();
                         message.obj = t;
                         message.what = 2;
                         handler.sendMessage(message);
@@ -144,11 +148,9 @@ public class RequestUtil<T> {
         });
     }
 
-    public void requestFileHttp(String url, Map<String, String> params, File file, Map<String, String> header, OnResponseListener<T> onResponseListener, Class<T> classOfT) {
+    public void requestFileHttp(String url, Map<String, String> params, List<File> files, Map<String, String> header, OnResponseListener<T> onResponseListener, Type type) {
+        this.mOnResponseListener = onResponseListener;
         OkHttpClient okHttpClient = new OkHttpClient();
-        //http://121.36.58.193/blade-system/v1/token?grantType=credible&account=TEST1&password=1234&userName=地调局TEST1&tenantId=100000
-        //http://api.k780.com:88/?app=weather.future&weaid=1&&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json
-
         //添加header信息
         Headers.Builder builder_header = new Headers.Builder();
         for (Map.Entry<String, String> entry : header.entrySet()) {
@@ -161,9 +163,10 @@ public class RequestUtil<T> {
         for (Map.Entry<String, String> entry : params.entrySet()) {
             builder.addFormDataPart(entry.getKey(), entry.getValue());
         }
-        builder.addFormDataPart("file", file.getName(),
-                RequestBody.create(MediaType.parse("multipart/form-data"), file));
-
+        for (File file : files) {
+            builder.addFormDataPart(file.getName(), file.getName(),
+                    RequestBody.create(MediaType.parse("multipart/form-data"), file));
+        }
         RequestBody requestBody = builder.build();
         Request request1 = new Request.Builder()
                 .url(url)
@@ -173,7 +176,13 @@ public class RequestUtil<T> {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d("TAG", "onFailure: " + e.getMessage());
-                onResponseListener.fail("-1", e.getMessage());
+                Message message = new Message();
+                message.what = 1;
+                Bundle data = new Bundle();
+                data.putString("code", "-1");
+                data.putString("message", e.getMessage());
+                message.setData(data);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -182,11 +191,19 @@ public class RequestUtil<T> {
                 Log.d("TAG", "————》" + res);
                 if (response.code() == 200) {
                     Gson gson = new Gson();
-                    JsonObject responseObject = gson.fromJson(res, JsonObject.class);
-                    T t = gson.fromJson(responseObject.get("data"), classOfT);
-                    onResponseListener.onsuccess(t);
+                    T t = gson.fromJson(res, type);
+                    Message message = new Message();
+                    message.obj = t;
+                    message.what = 2;
+                    handler.sendMessage(message);
                 } else {
-                    onResponseListener.fail(response.code() + "", response.message());
+                    Message message = new Message();
+                    message.what = 1;
+                    Bundle data = new Bundle();
+                    data.putString("code", response.code() + "");
+                    data.putString("message", response.message());
+                    message.setData(data);
+                    handler.sendMessage(message);
                 }
             }
         });
@@ -195,8 +212,8 @@ public class RequestUtil<T> {
 
     public void requestRawHttp(String url, String json, Map<String, String> header, OnResponseListener<T> onResponseListener, Type type) {
         OkHttpClient okHttpClient = new OkHttpClient();
-        //http://121.36.58.193/blade-system/v1/token?grantType=credible&account=TEST1&password=1234&userName=地调局TEST1&tenantId=100000
-        //http://api.k780.com:88/?app=weather.future&weaid=1&&appkey=10003&sign=b59bc3ef6191eb9f747dd4e83c99f2a4&format=json
+
+        this.mOnResponseListener = onResponseListener;
 
         //添加header信息
         Headers.Builder builder_header = new Headers.Builder();
@@ -217,7 +234,14 @@ public class RequestUtil<T> {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d("TAG", "onFailure: " + e.getMessage());
-                onResponseListener.fail("-1", e.getMessage());
+
+                Message message = new Message();
+                message.what = 1;
+                Bundle data = new Bundle();
+                data.putString("code", "-1");
+                data.putString("message", e.getMessage());
+                message.setData(data);
+                handler.sendMessage(message);
             }
 
             @Override
@@ -226,11 +250,20 @@ public class RequestUtil<T> {
                 Log.d("TAG", "————》" + res);
                 if (response.code() == 200) {
                     Gson gson = new Gson();
-                    JsonObject responseObject = gson.fromJson(res, JsonObject.class);
                     T t = gson.fromJson(res, type);
-                    onResponseListener.onsuccess(t);
+                    Message message = new Message();
+                    message.obj = t;
+                    message.what = 2;
+                    handler.sendMessage(message);
                 } else {
-                    onResponseListener.fail(response.code() + "", response.message());
+
+                    Message message = new Message();
+                    message.what = 1;
+                    Bundle data = new Bundle();
+                    data.putString("code", response.code() + "");
+                    data.putString("message", response.message());
+                    message.setData(data);
+                    handler.sendMessage(message);
                 }
             }
         });

@@ -15,11 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.AoRGMapT.AchievementAcceptanceActivity;
 import com.AoRGMapT.BaseApplication;
+import com.AoRGMapT.ChartActivity;
 import com.AoRGMapT.CommencementAcceptanceActivity;
 import com.AoRGMapT.CoreDescriptionActivity;
 import com.AoRGMapT.FieldAcceptanceActivity;
 import com.AoRGMapT.FieldConstructionLoggingActivity;
 import com.AoRGMapT.FracturingTestActivity;
+import com.AoRGMapT.PieChartActivity;
 import com.AoRGMapT.QualityTestingActivity;
 import com.AoRGMapT.R;
 import com.AoRGMapT.ReclamationActivity;

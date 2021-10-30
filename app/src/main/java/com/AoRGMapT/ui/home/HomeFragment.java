@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.AoRGMapT.adapter.WorkProjectAdapter;
 import com.AoRGMapT.bean.ProjectBean;
 import com.AoRGMapT.bean.ProjectResponseData;
 import com.AoRGMapT.bean.ResponseDataList;
+import com.AoRGMapT.bean.StatisticsProjectResponseData;
 import com.AoRGMapT.bean.WorkItemBean;
 import com.AoRGMapT.databinding.FragmentHomeBinding;
 import com.AoRGMapT.util.ChooseHomeDialog;
@@ -79,28 +81,32 @@ public class HomeFragment extends Fragment {
             public void onRefresh(TwinklingRefreshLayout refreshLayout) {
                 super.onRefresh(refreshLayout);
                 current = 1;
-                DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
+                DataAcquisitionUtil.getInstance().getBoardTasksList(pageSize, current, new RequestUtil.OnResponseListener<StatisticsProjectResponseData>() {
                     @Override
-                    public void onsuccess(ProjectResponseData projectBeans) {
+                    public void onsuccess(StatisticsProjectResponseData projectBeans) {
                         try {
                             mProjectBeans.clear();
-                            mProjectBeans.addAll(projectBeans.getData().getRecords());
+                            mProjectBeans.addAll(projectBeans.getData());
                             adapter.notifyDataSetChanged();
-                            refreshLayout.finishRefreshing();
-                            //打开上拉加载的功能
-                            binding.lingrefresh.setEnableLoadmore(true);
                             Toast.makeText(HomeFragment.this.getContext(), "下拉刷新", Toast.LENGTH_SHORT).show();
                             //更新项目列表
                             BaseApplication.projectBeanList = mProjectBeans;
                         } catch (Exception ex) {
                             Log.e(TAG, "数据解析失败");
                         }
+                        refreshLayout.finishRefreshing();
+                        //打开上拉加载的功能
+                        binding.lingrefresh.setEnableLoadmore(true);
 
                     }
 
                     @Override
                     public void fail(String code, String message) {
                         Log.e(TAG, "获取项目列表失败：" + code + message);
+                        Toast.makeText(HomeFragment.this.getContext(), "获取项目列表失败", Toast.LENGTH_SHORT).show();
+                        refreshLayout.finishRefreshing();
+                        //打开上拉加载的功能
+                        binding.lingrefresh.setEnableLoadmore(true);
                     }
                 });
 
@@ -110,28 +116,29 @@ public class HomeFragment extends Fragment {
             public void onLoadMore(TwinklingRefreshLayout refreshLayout) {
                 super.onLoadMore(refreshLayout);
                 current++;
-                DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
+                DataAcquisitionUtil.getInstance().getBoardTasksList(pageSize, current, new RequestUtil.OnResponseListener<StatisticsProjectResponseData>() {
                     @Override
-                    public void onsuccess(ProjectResponseData projectBeans) {
+                    public void onsuccess(StatisticsProjectResponseData projectBeans) {
                         try {
-                            mProjectBeans.addAll(projectBeans.getData().getRecords());
+                            mProjectBeans.addAll(projectBeans.getData());
                             adapter.notifyDataSetChanged();
-                            refreshLayout.finishLoadmore();
                             Toast.makeText(HomeFragment.this.getContext(), "上拉加载", Toast.LENGTH_SHORT).show();
-                            if (projectBeans.getData().getTotal() == mProjectBeans.size()) {
-                                //当数据加载完成之后，停止上拉加载功能
-                                binding.lingrefresh.setEnableLoadmore(false);
-                            }
+//                            if (projectBeans.getData().getTotal() == mProjectBeans.size()) {
+//                                //当数据加载完成之后，停止上拉加载功能
+//                                binding.lingrefresh.setEnableLoadmore(false);
+//                            }
                             BaseApplication.projectBeanList = mProjectBeans;
                         } catch (Exception ex) {
                             Log.e(TAG, "数据解析失败");
                         }
-
+                        refreshLayout.finishLoadmore();
                     }
 
                     @Override
                     public void fail(String code, String message) {
                         Log.e(TAG, "获取项目列表失败：" + code + message);
+                        Toast.makeText(HomeFragment.this.getContext(), "获取项目列表失败", Toast.LENGTH_SHORT).show();
+                        refreshLayout.finishLoadmore();
                     }
                 });
 
@@ -148,6 +155,7 @@ public class HomeFragment extends Fragment {
                         if (BaseApplication.currentProject != null) {
                             //显示当前项目信息
                             binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
+                            binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
                         }
                     }
                 });
@@ -204,15 +212,16 @@ public class HomeFragment extends Fragment {
 
     //获取项目数据
     private void initData() {
-        DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
+        DataAcquisitionUtil.getInstance().getBoardTasksList(pageSize, current, new RequestUtil.OnResponseListener<StatisticsProjectResponseData>() {
             @Override
-            public void onsuccess(ProjectResponseData projectBeans) {
+            public void onsuccess(StatisticsProjectResponseData projectBeans) {
                 try {
-                    mProjectBeans.addAll(projectBeans.getData().getRecords());
+                    mProjectBeans.addAll(projectBeans.getData());
                     adapter.notifyDataSetChanged();
                     BaseApplication.projectBeanList = mProjectBeans;
                     if (BaseApplication.currentProject == null && mProjectBeans != null && mProjectBeans.size() > 0) {
                         BaseApplication.currentProject = mProjectBeans.get(0);
+                        binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
                         //显示当前项目信息
                         binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
                     }
@@ -235,6 +244,7 @@ public class HomeFragment extends Fragment {
         if (BaseApplication.currentProject != null) {
             //显示当前项目信息
             binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
+            binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
         }
     }
 

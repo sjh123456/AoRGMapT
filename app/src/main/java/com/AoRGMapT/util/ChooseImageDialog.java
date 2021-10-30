@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -13,12 +15,16 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.core.content.FileProvider;
+
 import com.AoRGMapT.R;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class ChooseImageDialog {
@@ -26,6 +32,7 @@ public class ChooseImageDialog {
     private Dialog mImageDialog;
 
     private static ChooseImageDialog chooseImageDialog;
+    private File outputImage;
 
     public static ChooseImageDialog getInstance() {
         synchronized (ChooseImageDialog.class) {
@@ -57,11 +64,31 @@ public class ChooseImageDialog {
         view.findViewById(R.id.tv_camera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent;
-                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                context.startActivityForResult(intent, 200);
-                if (mImageDialog != null) {
-                    mImageDialog.dismiss();
+
+                //创建file对象，用于存储拍照后的图片，这也是拍照成功后的照片路径
+                Uri photoUri;
+                outputImage = new File(context.getExternalCacheDir(), System.currentTimeMillis() + ".jpg");
+                try {
+                    //判断文件是否存在，存在删除，不存在创建
+                    if (outputImage.exists()) {
+                        outputImage.delete();
+                    }
+                    outputImage.createNewFile();
+                    //判断当前Android版本
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        photoUri = FileProvider.getUriForFile(context, "com.AoRGMapT", outputImage);
+                    } else {
+                        photoUri = Uri.fromFile(outputImage);
+                    }
+
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                    context.startActivityForResult(intent, 200);
+                    if (mImageDialog != null) {
+                        mImageDialog.dismiss();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -89,7 +116,7 @@ public class ChooseImageDialog {
     /*
   检测文件权限
    */
-    public  void show(Activity activity) {
+    public void show(Activity activity) {
 
         if (!XXPermissions.isGranted(activity, Permission.MANAGE_EXTERNAL_STORAGE)) {
             XXPermissions.with(activity)
@@ -114,5 +141,9 @@ public class ChooseImageDialog {
         }
     }
 
+
+    public File getPhotoFile() {
+        return outputImage;
+    }
 
 }

@@ -11,28 +11,42 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.AoRGMapT.adapter.ImageAdapter;
 import com.AoRGMapT.bean.ImageBean;
+import com.AoRGMapT.bean.PlanBean;
+import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
+import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.EncapsulationImageUrl;
+import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 成果验收
  */
 public class AchievementAcceptanceActivity extends AppCompatActivity {
+
+    private final static String TAG = "AchievementAcceptanceActivity";
 
     //记录时间
     private EditText mEditTime;
@@ -57,19 +71,89 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
     private ImageAdapter mAchievementsImageAdapter;
     List<ImageBean> mAchievementsImageBeans = new ArrayList<>();
 
+    //要删除的图片列表
+    private List<String> deleteImageList = new ArrayList<>();
+    //当前的项目
+    private PlanBean mPlanBean;
+
     //0验收意见与专家名单 1整改情况说明 2 现场照片 3成果验收记录
     private int mChooseImageType = 0;
+
+    //当前项目的id
+    private String id;
+
+
+    private TextView project_name;
+    private EditText wellName;
+    private EditText recorder;
+    private EditText remark;
+    private TextView tv_save;
+    private TextView tv_remove;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_achievement_acceptance);
-
+        id = getIntent().getStringExtra("id");
         mEditTime = findViewById(R.id.ed_time);
         mGridCheck = findViewById(R.id.grid_check);
         mGridRectification = findViewById(R.id.grid_rectification);
         mGridScene = findViewById(R.id.grid_scene);
         mGridAchievements = findViewById(R.id.grid_achievements);
+        project_name = findViewById(R.id.project_name);
+        wellName = findViewById(R.id.wellName);
+        recorder = findViewById(R.id.recorder);
+        remark = findViewById(R.id.remark);
+        tv_save = findViewById(R.id.tv_save);
+        tv_remove = findViewById(R.id.tv_remove);
+
+        findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AchievementAcceptanceActivity.this.finish();
+            }
+        });
+        tv_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("projectId", BaseApplication.currentProject.getId());
+                map.put("taskType", "成果验收");
+                map.put("wellName", wellName.getText().toString());
+                map.put("recorder", recorder.getText().toString());
+                // map.put("recordDate", mEditTime.getText().toString());
+                map.put("remark", remark.getText().toString());
+                if (!TextUtils.isEmpty(id)) {
+                    map.put("id", id);
+                }
+                DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                    @Override
+                    public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
+
+                        if (responseDataItem.isSuccess()) {
+
+                            //添加图片
+                            addPhotos(responseDataItem.getData().getId(), mPlanBean);
+                            if (deleteImageList != null && deleteImageList.size() > 0) {
+                                EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
+                            }
+                            AchievementAcceptanceActivity.this.finish();
+                        } else {
+                            Toast.makeText(AchievementAcceptanceActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void fail(String code, String message) {
+                        Toast.makeText(AchievementAcceptanceActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
+            }
+        });
 
         setCurrentTime();
 
@@ -81,6 +165,8 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mCheckImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mCheckImageBeans.remove(position);
                 mGridCheck.setAdapter(mCheckImageAdapter);
             }
@@ -106,6 +192,8 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mRectificationImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mRectificationImageBeans.remove(position);
                 mGridRectification.setAdapter(mRectificationImageAdapter);
             }
@@ -130,6 +218,8 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mSceneImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mSceneImageBeans.remove(position);
                 mGridScene.setAdapter(mSceneImageAdapter);
             }
@@ -154,6 +244,8 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mAchievementsImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mAchievementsImageBeans.remove(position);
                 mGridAchievements.setAdapter(mAchievementsImageAdapter);
             }
@@ -170,6 +262,133 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
 
             }
         });
+
+        //设置项目名称和井号
+        if (BaseApplication.currentProject != null) {
+            project_name.setText(BaseApplication.currentProject.getProjectName());
+            wellName.setText(BaseApplication.currentProject.getDefaultWellName());
+            recorder.setText(BaseApplication.userInfo.getUserName());
+        }
+
+        if (!TextUtils.isEmpty(id)) {
+
+            tv_remove.setVisibility(View.VISIBLE);
+            tv_remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                        @Override
+                        public void onsuccess(ResponseDataItem o) {
+                            if (o.isSuccess()) {
+                                AchievementAcceptanceActivity.this.finish();
+                            } else {
+                                Toast.makeText(AchievementAcceptanceActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+
+                        @Override
+                        public void fail(String code, String message) {
+                            Toast.makeText(AchievementAcceptanceActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+
+            DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
+                @Override
+                public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
+                    if (planBeanResponseDataItem != null) {
+                        mPlanBean = planBeanResponseDataItem.getData();
+                        if (mPlanBean != null) {
+                            wellName.setText(mPlanBean.getWellName());
+                            recorder.setText(mPlanBean.getRecorder());
+                            remark.setText(mPlanBean.getRemark());
+                            mEditTime.setText(mPlanBean.getCreateTime());
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mCheckImageBeans.add(mCheckImageBeans.size() - 1, imageBean);
+                            }
+                            mCheckImageAdapter.notifyDataSetChanged();
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos2()) && mPlanBean.getFiles2() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, imageBean);
+                            }
+                            mRectificationImageAdapter.notifyDataSetChanged();
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos3()) && mPlanBean.getFiles3() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mSceneImageBeans.add(mSceneImageBeans.size() - 1, imageBean);
+                            }
+                            mSceneImageAdapter.notifyDataSetChanged();
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos4()) && mPlanBean.getFiles4() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles4()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mAchievementsImageBeans.add(mAchievementsImageBeans.size() - 1, imageBean);
+                            }
+                            mAchievementsImageAdapter.notifyDataSetChanged();
+                        }
+                    }
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "项目详情请求失败");
+                }
+            });
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
+    }
+
+    //新增图片
+    private void addPhotos(String taskid, PlanBean planBean) {
+
+        if (mCheckImageBeans != null && mCheckImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p1", mCheckImageBeans, photoFiles);
+        }
+        if (mRectificationImageBeans != null && mRectificationImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles2 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles2 = planBean.getFiles2();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p2", mRectificationImageBeans, photoFiles2);
+        }
+        if (mSceneImageBeans != null && mSceneImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles3 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles3 = planBean.getFiles3();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p3", mSceneImageBeans, photoFiles3);
+        }
+        if (mAchievementsImageBeans != null && mCheckImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles4 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles4 = planBean.getFiles4();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p4", mAchievementsImageBeans, photoFiles4);
+        }
+
     }
 
     /**
@@ -185,6 +404,7 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        String picturePath = null;
         if (requestCode == 100 && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
@@ -196,50 +416,28 @@ public class AchievementAcceptanceActivity extends AppCompatActivity {
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
 
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
 
             cursor.close();
-
-
-            Glide.with(this).asBitmap().load(new File(picturePath)).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-
-                    if (mChooseImageType == 0) {
-                        mCheckImageBeans.add(mCheckImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridCheck.setAdapter(mCheckImageAdapter);
-                    } else if (mChooseImageType == 1) {
-                        mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridRectification.setAdapter(mRectificationImageAdapter);
-                    } else if (mChooseImageType == 2) {
-                        mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridScene.setAdapter(mSceneImageAdapter);
-                    }else if (mChooseImageType == 3) {
-                        mAchievementsImageBeans.add(mAchievementsImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridAchievements.setAdapter(mAchievementsImageAdapter);
-                    }
-                }
-            });
-
-
         } else if (requestCode == 200 && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap bitmap = extras.getParcelable("data");
-                if (mChooseImageType == 0) {
-                    mCheckImageBeans.add(mCheckImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridCheck.setAdapter(mCheckImageAdapter);
-                } else if (mChooseImageType == 1) {
-                    mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridRectification.setAdapter(mRectificationImageAdapter);
-                } else if (mChooseImageType == 2) {
-                    mSceneImageBeans.add(mSceneImageBeans.size() - 1,new ImageBean(null, bitmap, 0));
-                    mGridScene.setAdapter(mSceneImageAdapter);
-                }else if (mChooseImageType == 3) {
-                    mAchievementsImageBeans.add(mAchievementsImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridAchievements.setAdapter(mAchievementsImageAdapter);
-                }
+            picturePath = ChooseImageDialog.getInstance().getPhotoFile().getAbsolutePath();
+        }
+        if (!TextUtils.isEmpty(picturePath)) {
+
+            if (mChooseImageType == 0) {
+                mCheckImageBeans.add(mCheckImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridCheck.setAdapter(mCheckImageAdapter);
+            } else if (mChooseImageType == 1) {
+                mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridRectification.setAdapter(mRectificationImageAdapter);
+            } else if (mChooseImageType == 2) {
+                mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridScene.setAdapter(mSceneImageAdapter);
+            } else if (mChooseImageType == 3) {
+                mAchievementsImageBeans.add(mAchievementsImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridAchievements.setAdapter(mAchievementsImageAdapter);
             }
+
         }
 
     }

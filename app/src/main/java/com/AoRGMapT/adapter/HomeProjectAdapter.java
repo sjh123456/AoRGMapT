@@ -35,7 +35,7 @@ public class HomeProjectAdapter extends RecyclerView.Adapter<HomeProjectAdapter.
 
         ProjectBean item=itemList.get(position);
         holder.pname.setText(item.getProjectName());
-        holder.comNum.setText(item.getCompletedNum()+"");
+        holder.comNum.setText(item.getTaskCount()+"");
         holder.imcomNum.setText(item.getImcompletedNum()+"");
     }
 

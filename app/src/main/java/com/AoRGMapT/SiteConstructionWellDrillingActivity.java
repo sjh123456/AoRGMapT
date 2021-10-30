@@ -27,6 +27,7 @@ import com.AoRGMapT.bean.SiteConstructionWellDrillingBean;
 import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.EncapsulationImageUrl;
 import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -66,7 +67,10 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
     private ImageAdapter mSceneImageAdapter;
     List<ImageBean> mSceneImageBeans = new ArrayList<>();
 
-
+    //要删除的图片列表
+    private List<String> deleteImageList = new ArrayList<>();
+    //当前的项目
+    private PlanBean mPlanBean;
     //0早会记录 1大小班 2 现场照片
     private int mChooseImageType = 0;
 
@@ -74,7 +78,7 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
     private String id;
 
     private TextView project_name;
-    private EditText well_name;
+    private EditText wellName;
     private EditText construction_days;
     private EditText well_depth;
     private EditText daily_footage;
@@ -98,7 +102,7 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
         mGridClass = findViewById(R.id.grid_classes);
         mGridScene = findViewById(R.id.grid_scene);
         project_name = findViewById(R.id.project_name);
-        well_name = findViewById(R.id.well_name);
+        wellName = findViewById(R.id.wellName);
         construction_days = findViewById(R.id.construction_days);
         well_depth = findViewById(R.id.well_depth);
         daily_footage = findViewById(R.id.daily_footage);
@@ -120,25 +124,33 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Map<String, String> map = new HashMap<>();
-                map.put("event_id", BaseApplication.currentProject.getId());
-                map.put("task_type", "钻井施工");
-                map.put("well_name", well_name.getText().toString());
+                Map<String, Object> map = new HashMap<>();
+                map.put("projectId", BaseApplication.currentProject.getId());
+                map.put("taskType", "钻井施工");
+                map.put("wellName", wellName.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                map.put("record_data", mEditTime.getText().toString());
+                map.put("recordDate", mEditTime.getText().toString());
                 map.put("remark", remark.getText().toString());
-                SiteConstructionWellDrillingBean extend_data = new SiteConstructionWellDrillingBean();
-                extend_data.setConstruction_days(construction_days.getText().toString());
-                extend_data.setConstruction_unit(construction_unit.getText().toString());
-                extend_data.setDaily_footage(daily_footage.getText().toString());
-                extend_data.setWell_depth(well_depth.getText().toString());
-                extend_data.setStratum(stratum.getText().toString());
-                map.put("extend_data", new Gson().toJson(extend_data));
+                if (!TextUtils.isEmpty(id)) {
+                    map.put("id", id);
+                }
+                SiteConstructionWellDrillingBean extendData = new SiteConstructionWellDrillingBean();
+                extendData.setConstruction_days(construction_days.getText().toString());
+                extendData.setConstruction_unit(construction_unit.getText().toString());
+                extendData.setDaily_footage(daily_footage.getText().toString());
+                extendData.setWell_depth(well_depth.getText().toString());
+                extendData.setStratum(stratum.getText().toString());
+                map.put("extendData", new Gson().toJson(extendData));
                 DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                     @Override
                     public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
 
                         if (responseDataItem.isSuccess()) {
+                            //添加图片
+                            addPhotos(responseDataItem.getData().getId(), mPlanBean);
+                            if (deleteImageList != null && deleteImageList.size() > 0) {
+                                EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
+                            }
                             SiteConstructionWellDrillingActivity.this.finish();
 
                         } else {
@@ -166,6 +178,8 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mMorningMeetingImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mMorningMeetingImageBeans.remove(position);
                 mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
             }
@@ -191,6 +205,8 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mClassImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mClassImageBeans.remove(position);
                 mGridClass.setAdapter(mClassImageAdapter);
             }
@@ -215,6 +231,8 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mSceneImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mSceneImageBeans.remove(position);
                 mGridScene.setAdapter(mSceneImageAdapter);
             }
@@ -235,7 +253,7 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
         //设置项目名称和井号
         if (BaseApplication.currentProject != null) {
             project_name.setText(BaseApplication.currentProject.getProjectName());
-            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            wellName.setText(BaseApplication.currentProject.getDefaultWellName());
             recorder.setText(BaseApplication.userInfo.getUserName());
         }
         if (!TextUtils.isEmpty(id)) {
@@ -268,19 +286,46 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
-                        PlanBean planBean = planBeanResponseDataItem.getData();
-                        if (planBean != null) {
-                            well_name.setText(planBean.getWellName());
-                            recorder.setText(planBean.getRecorder());
-                            remark.setText(planBean.getRemark());
-                            mEditTime.setText(planBean.getCreateTime());
-                            SiteConstructionWellDrillingBean bean = new Gson().fromJson(planBean.getExtendData(), SiteConstructionWellDrillingBean.class);
+                        mPlanBean = planBeanResponseDataItem.getData();
+                        if (mPlanBean != null) {
+                            wellName.setText(mPlanBean.getWellName());
+                            recorder.setText(mPlanBean.getRecorder());
+                            remark.setText(mPlanBean.getRemark());
+                            mEditTime.setText(mPlanBean.getCreateTime());
+                            SiteConstructionWellDrillingBean bean = new Gson().fromJson(mPlanBean.getExtendData(), SiteConstructionWellDrillingBean.class);
                             if (bean != null) {
                                 construction_days.setText(bean.getConstruction_days());
                                 construction_unit.setText(bean.getConstruction_unit());
                                 well_depth.setText(bean.getWell_depth());
                                 stratum.setText(bean.getStratum());
                                 daily_footage.setText(bean.getDaily_footage());
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, imageBean);
+                                }
+                                mMorningMeetingImageAdapter.notifyDataSetChanged();
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles2() != null) {
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mClassImageBeans.add(mClassImageBeans.size() - 1, imageBean);
+                                }
+                                mClassImageAdapter.notifyDataSetChanged();
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles3() != null) {
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mSceneImageBeans.add(mSceneImageBeans.size() - 1, imageBean);
+                                }
+                                mSceneImageAdapter.notifyDataSetChanged();
                             }
                         }
                     }
@@ -307,9 +352,38 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
         mEditTime.setText(simpleDateFormat.format(date));
     }
 
+    //新增图片
+    private void addPhotos(String taskid, PlanBean planBean) {
+
+        if (mMorningMeetingImageBeans != null && mMorningMeetingImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p1", mMorningMeetingImageBeans, photoFiles);
+        }
+        if (mClassImageBeans != null && mClassImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles2 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles2 = planBean.getFiles();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p2", mClassImageBeans, photoFiles2);
+        }
+        if (mSceneImageBeans != null && mSceneImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles3 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles3 = planBean.getFiles();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p3", mSceneImageBeans, photoFiles3);
+        }
+
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        String picturePath = null;
         if (requestCode == 100 && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
@@ -321,45 +395,25 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
 
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
 
             cursor.close();
-
-
-            Glide.with(this).asBitmap().load(new File(picturePath)).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-
-                    if (mChooseImageType == 0) {
-                        mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
-                    } else if (mChooseImageType == 1) {
-                        mClassImageBeans.add(mClassImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridClass.setAdapter(mClassImageAdapter);
-                    } else if (mChooseImageType == 2) {
-                        mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridScene.setAdapter(mSceneImageAdapter);
-                    }
-                }
-            });
-
-
         } else if (requestCode == 200 && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap bitmap = extras.getParcelable("data");
-                if (mChooseImageType == 0) {
-                    mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
-                } else if (mChooseImageType == 1) {
-                    mClassImageBeans.add(mClassImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridClass.setAdapter(mClassImageAdapter);
-                } else if (mChooseImageType == 2) {
-                    mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridScene.setAdapter(mSceneImageAdapter);
-                }
+            picturePath = ChooseImageDialog.getInstance().getPhotoFile().getAbsolutePath();
+        }
+        if (!TextUtils.isEmpty(picturePath)) {
+            if (mChooseImageType == 0) {
+                mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
+            } else if (mChooseImageType == 1) {
+                mClassImageBeans.add(mClassImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mGridClass.setAdapter(mClassImageAdapter);
+            } else if (mChooseImageType == 2) {
+                mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mGridScene.setAdapter(mSceneImageAdapter);
             }
         }
+
 
     }
 

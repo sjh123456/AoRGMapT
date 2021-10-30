@@ -27,6 +27,7 @@ import com.AoRGMapT.bean.ResponseDataItem;
 import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.EncapsulationImageUrl;
 import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -42,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 测井
+ * 测井施工
  */
 public class FieldConstructionLoggingActivity extends AppCompatActivity {
 
@@ -65,7 +66,10 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
     private GridView mGridScene;
     private ImageAdapter mSceneImageAdapter;
     List<ImageBean> mSceneImageBeans = new ArrayList<>();
-
+    //要删除的图片列表
+    private List<String> deleteImageList = new ArrayList<>();
+    //当前的项目
+    private PlanBean mPlanBean;
 
     //0早会记录 1分段测井曲线 2 现场照片 
     private int mChooseImageType = 0;
@@ -74,7 +78,7 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
     private String id;
 
     private TextView project_name;
-    private EditText well_name;
+    private EditText wellName;
     private EditText horizon;
     private EditText top_boundary_depth;
     private EditText bottom_boundary_depth;
@@ -96,7 +100,7 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
         mGridSubsection = findViewById(R.id.grid_subsection);
         mGridScene = findViewById(R.id.grid_scene);
         project_name = findViewById(R.id.project_name);
-        well_name = findViewById(R.id.well_name);
+        wellName = findViewById(R.id.wellName);
         horizon = findViewById(R.id.horizon);
         top_boundary_depth = findViewById(R.id.top_boundary_depth);
         bottom_boundary_depth = findViewById(R.id.bottom_boundary_depth);
@@ -116,26 +120,34 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Map<String, String> map = new HashMap<>();
-                map.put("event_id", BaseApplication.currentProject.getId());
-                map.put("task_type", "井位确认");
-                map.put("well_name", well_name.getText().toString());
+                Map<String, Object> map = new HashMap<>();
+                map.put("projectId", BaseApplication.currentProject.getId());
+                map.put("taskType", "测井施工");
+                map.put("wellName", wellName.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                map.put("record_data", mEditTime.getText().toString());
+                map.put("recordDate", mEditTime.getText().toString());
                 map.put("remark", remark.getText().toString());
-                FieldConstructionLoggingBean extend_data = new FieldConstructionLoggingBean();
-                extend_data.setHorizon(horizon.getText().toString());
-                extend_data.setThickness(thickness.getText().toString());
-                extend_data.setBottom_boundary_depth(bottom_boundary_depth.getText().toString());
-                extend_data.setInterpretation_conclusion(interpretation_conclusion.getText().toString());
-                extend_data.setTop_boundary_depth(top_boundary_depth.getText().toString());
+                if (!TextUtils.isEmpty(id)) {
+                    map.put("id", id);
+                }
+                FieldConstructionLoggingBean extendData = new FieldConstructionLoggingBean();
+                extendData.setHorizon(horizon.getText().toString());
+                extendData.setThickness(thickness.getText().toString());
+                extendData.setBottom_boundary_depth(bottom_boundary_depth.getText().toString());
+                extendData.setInterpretation_conclusion(interpretation_conclusion.getText().toString());
+                extendData.setTop_boundary_depth(top_boundary_depth.getText().toString());
 
-                map.put("extend_data", new Gson().toJson(extend_data));
+                map.put("extendData", new Gson().toJson(extendData));
                 DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                     @Override
                     public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
 
                         if (responseDataItem.isSuccess()) {
+                            //添加图片
+                            addPhotos(responseDataItem.getData().getId(), mPlanBean);
+                            if (deleteImageList != null && deleteImageList.size() > 0) {
+                                EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
+                            }
                             FieldConstructionLoggingActivity.this.finish();
 
                         } else {
@@ -163,6 +175,8 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mMorningMeetingImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mMorningMeetingImageBeans.remove(position);
                 mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
             }
@@ -188,6 +202,8 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mSubsectionImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mSubsectionImageBeans.remove(position);
                 mGridSubsection.setAdapter(mSubsectionImageAdapter);
             }
@@ -212,6 +228,8 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mSceneImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mSceneImageBeans.remove(position);
                 mGridScene.setAdapter(mSceneImageAdapter);
             }
@@ -232,7 +250,7 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
         //设置项目名称和井号
         if (BaseApplication.currentProject != null) {
             project_name.setText(BaseApplication.currentProject.getProjectName());
-            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            wellName.setText(BaseApplication.currentProject.getDefaultWellName());
             recorder.setText(BaseApplication.userInfo.getUserName());
         }
 
@@ -266,19 +284,46 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
-                        PlanBean planBean = planBeanResponseDataItem.getData();
-                        if (planBean != null) {
-                            well_name.setText(planBean.getWellName());
-                            recorder.setText(planBean.getRecorder());
-                            remark.setText(planBean.getRemark());
-                            mEditTime.setText(planBean.getCreateTime());
-                            FieldConstructionLoggingBean bean = new Gson().fromJson(planBean.getExtendData(), FieldConstructionLoggingBean.class);
+                        mPlanBean = planBeanResponseDataItem.getData();
+                        if (mPlanBean != null) {
+                            wellName.setText(mPlanBean.getWellName());
+                            recorder.setText(mPlanBean.getRecorder());
+                            remark.setText(mPlanBean.getRemark());
+                            mEditTime.setText(mPlanBean.getCreateTime());
+                            FieldConstructionLoggingBean bean = new Gson().fromJson(mPlanBean.getExtendData(), FieldConstructionLoggingBean.class);
                             if (bean != null) {
                                 horizon.setText(bean.getHorizon());
                                 bottom_boundary_depth.setText(bean.getBottom_boundary_depth());
                                 thickness.setText(bean.getThickness());
                                 interpretation_conclusion.setText(bean.getInterpretation_conclusion());
                                 top_boundary_depth.setText(bean.getTop_boundary_depth());
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, imageBean);
+                                }
+                                mMorningMeetingImageAdapter.notifyDataSetChanged();
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos2()) && mPlanBean.getFiles2() != null) {
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mSubsectionImageBeans.add(mSubsectionImageBeans.size() - 1, imageBean);
+                                }
+                                mSubsectionImageAdapter.notifyDataSetChanged();
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos3()) && mPlanBean.getFiles3() != null) {
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mSceneImageBeans.add(mSceneImageBeans.size() - 1, imageBean);
+                                }
+                                mSceneImageAdapter.notifyDataSetChanged();
                             }
                         }
                     }
@@ -305,9 +350,39 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
         mEditTime.setText(simpleDateFormat.format(date));
     }
 
+    //新增图片
+    private void addPhotos(String taskid, PlanBean planBean) {
+
+        if (mMorningMeetingImageBeans != null && mMorningMeetingImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "测井施工", "p1", mMorningMeetingImageBeans, photoFiles);
+        }
+        if (mSubsectionImageBeans != null && mSubsectionImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles2 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles2 = planBean.getFiles2();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "测井施工", "p2", mSubsectionImageBeans, photoFiles2);
+        }
+        if (mSceneImageBeans != null && mSceneImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles3 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles3 = planBean.getFiles3();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "测井施工", "p3", mSceneImageBeans, photoFiles3);
+        }
+
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        String picturePath = null;
         if (requestCode == 100 && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
@@ -319,44 +394,27 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
 
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
 
             cursor.close();
-
-
-            Glide.with(this).asBitmap().load(new File(picturePath)).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-
-                    if (mChooseImageType == 0) {
-                        mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
-                    } else if (mChooseImageType == 1) {
-                        mSubsectionImageBeans.add(mSubsectionImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridSubsection.setAdapter(mSubsectionImageAdapter);
-                    } else if (mChooseImageType == 2) {
-                        mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridScene.setAdapter(mSceneImageAdapter);
-                    }
-                }
-            });
-
-
         } else if (requestCode == 200 && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap bitmap = extras.getParcelable("data");
-                if (mChooseImageType == 0) {
-                    mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
-                } else if (mChooseImageType == 1) {
-                    mSubsectionImageBeans.add(mSubsectionImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridSubsection.setAdapter(mSubsectionImageAdapter);
-                } else if (mChooseImageType == 2) {
-                    mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridScene.setAdapter(mSceneImageAdapter);
-                }
+            picturePath = ChooseImageDialog.getInstance().getPhotoFile().getAbsolutePath();
+        }
+        if (!TextUtils.isEmpty(picturePath)) {
+
+
+            if (mChooseImageType == 0) {
+                mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
+            } else if (mChooseImageType == 1) {
+                mSubsectionImageBeans.add(mSubsectionImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridSubsection.setAdapter(mSubsectionImageAdapter);
+            } else if (mChooseImageType == 2) {
+                mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridScene.setAdapter(mSceneImageAdapter);
             }
+
+
         }
 
     }

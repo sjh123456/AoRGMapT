@@ -4,12 +4,15 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.AoRGMapT.BaseApplication;
+import com.AoRGMapT.bean.ImageBean;
 import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.PlanResponseData;
 import com.AoRGMapT.bean.ProjectBean;
 import com.AoRGMapT.bean.ProjectResponseData;
 import com.AoRGMapT.bean.ResponseDataItem;
 import com.AoRGMapT.bean.ResponseDataList;
+import com.AoRGMapT.bean.StatisticsProjectResponseData;
+import com.AoRGMapT.bean.UpdateFileResponseData;
 import com.AoRGMapT.bean.UserInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -143,35 +146,7 @@ public class DataAcquisitionUtil {
                     new TypeToken<PlanResponseData>() {
                     }.getType());
         } else {
-            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
-                @Override
-                public void onsuccess(ResponseDataItem<UserInfo> obj) {
-                    if (obj != null) {
-                        UserInfo userInfo = obj.getData();
-                        if (userInfo != null && !TextUtils.isEmpty(userInfo.getAccessToken())) {
-                            //更新用户信息
-                            BaseApplication.userInfo = userInfo;
-                            Map<String, String> header = new HashMap<>();
-                            header.put("Authorization", authorization);
-                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-                            Map<String, String> param = new HashMap<>();
-                            param.put("projectId", projectId);
-                            param.put("column", "recordDate");
-                            param.put("pageSize", pageSize + "");
-                            param.put("current", current + "");
-                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailPageByJson",
-                                    param, header, responseListener,
-                                    new TypeToken<PlanResponseData>() {
-                                    }.getType());
-                        }
-                    }
-                }
-
-                @Override
-                public void fail(String code, String message) {
-                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
-                }
-            });
+            Log.e(TAG, "请先登陆账号");
         }
     }
 
@@ -194,31 +169,7 @@ public class DataAcquisitionUtil {
                     new TypeToken<ResponseDataItem<PlanBean>>() {
                     }.getType());
         } else {
-            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
-                @Override
-                public void onsuccess(ResponseDataItem<UserInfo> o) {
-                    if (o != null) {
-                        UserInfo userInfo = o.getData();
-                        if (userInfo != null) {
-                            BaseApplication.userInfo = userInfo;
-                            Map<String, String> header = new HashMap<>();
-                            header.put("Authorization", authorization);
-                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-                            Map<String, String> param = new HashMap<>();
-                            param.put("id", id);
-                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailByJson",
-                                    param, header, responseListener,
-                                    new TypeToken<ResponseDataItem<PlanBean>>() {
-                                    }.getType());
-                        }
-                    }
-                }
-
-                @Override
-                public void fail(String code, String message) {
-                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
-                }
-            });
+            Log.e(TAG, "请先登陆账号");
         }
     }
 
@@ -228,7 +179,7 @@ public class DataAcquisitionUtil {
      *
      * @param responseListener
      */
-    public void submit(Map<String, String> param, RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>> responseListener) {
+    public void submit(Map<String, Object> param, RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>> responseListener) {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
@@ -239,28 +190,7 @@ public class DataAcquisitionUtil {
                     new TypeToken<ResponseDataItem<PlanBean>>() {
                     }.getType());
         } else {
-            Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
-                @Override
-                public void onsuccess(ResponseDataItem<UserInfo> o) {
-                    if (o != null) {
-                        UserInfo userInfo = o.getData();
-                        if (userInfo != null) {
-                            BaseApplication.userInfo = userInfo;
-                            Map<String, String> header = new HashMap<>();
-                            header.put("Authorization", authorization);
-                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-                            RequestUtil.getInstance().requestRawHttp("http://121.36.58.193/blade-system/fieldInspectTask/submit", new Gson().toJson(param),
-                                    header, responseListener, new TypeToken<ResponseDataItem<PlanBean>>() {
-                                    }.getType());
-                        }
-                    }
-                }
-
-                @Override
-                public void fail(String code, String message) {
-                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
-                }
-            });
+            Log.e(TAG, "请先登陆账号");
         }
     }
 
@@ -283,22 +213,101 @@ public class DataAcquisitionUtil {
                     new TypeToken<ResponseDataItem>() {
                     }.getType());
         } else {
+            Log.e(TAG, "请先登陆账号");
+        }
+    }
+
+    /**
+     * 更新文件
+     *
+     * @param responseListener
+     */
+    public void updateFile(List<ImageBean> imageBeans, Map<String, String> param, RequestUtil.OnResponseListener<ResponseDataItem<UpdateFileResponseData.FileData>> responseListener) {
+        List<File> files = new ArrayList<>();
+        if (imageBeans != null) {
+            for (int i = 0; i < imageBeans.size(); i++) {
+                ImageBean imageBean = imageBeans.get(i);
+                if (!TextUtils.isEmpty(imageBean.getImagePath())) {
+                    files.add(new File(imageBean.getImagePath()));
+                }
+            }
+        }
+        if (files != null && files.size() > 0 && BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
+            Map<String, String> header = new HashMap<>();
+            header.put("Authorization", authorization);
+            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            RequestUtil.getInstance().requestFileHttp("http://121.36.58.193/blade-system/fieldInspectTask/appendFile",
+                    param, files, header, responseListener
+                    , new TypeToken<ResponseDataItem<UpdateFileResponseData.FileData>>() {
+                    }.getType());
+        } else {
+            Log.e(TAG, "请先登陆账号");
+        }
+    }
+
+    /**
+     * 删除文件
+     *
+     * @param responseListener
+     */
+    public void deleteFile(String taskId, String fileIds, RequestUtil.OnResponseListener<ResponseDataItem> responseListener) {
+        if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
+            Map<String, String> header = new HashMap<>();
+            header.put("Authorization", authorization);
+            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            Map<String, String> param = new HashMap<>();
+            param.put("taskId", taskId);
+            param.put("fileIds", fileIds);
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system//fieldInspectTask/deleteFile",
+                    param, header, responseListener
+                    , new TypeToken<ResponseDataItem>() {
+                    }.getType());
+        } else {
+            Log.e(TAG, "请先登陆账号");
+        }
+    }
+
+
+    /**
+     * 获取项目列表
+     *
+     * @param responseListener
+     */
+    public void getBoardTasksList(int pageSize, int current, RequestUtil.OnResponseListener<StatisticsProjectResponseData> responseListener) {
+
+
+        if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
+
+            Map<String, String> header = new HashMap<>();
+            header.put("Authorization", authorization);
+            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            Map<String, String> param = new HashMap<>();
+            param.put("pageSize", pageSize + "");
+            param.put("current", current + "");
+            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/getBoardTasksList",
+                    param,
+                    header,
+                    responseListener, new TypeToken<StatisticsProjectResponseData>() {
+                    }.getType());
+        } else {
             Login(account, name, password, new RequestUtil.OnResponseListener<ResponseDataItem<UserInfo>>() {
                 @Override
-                public void onsuccess(ResponseDataItem<UserInfo> o) {
-
-                    if (o != null) {
-                        UserInfo userInfo = o.getData();
-                        if (userInfo != null) {
+                public void onsuccess(ResponseDataItem<UserInfo> obj) {
+                    if (obj != null) {
+                        UserInfo userInfo = obj.getData();
+                        if (userInfo != null && !TextUtils.isEmpty(userInfo.getAccessToken())) {
+                            //更新用户信息
                             BaseApplication.userInfo = userInfo;
                             Map<String, String> header = new HashMap<>();
                             header.put("Authorization", authorization);
                             header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
                             Map<String, String> param = new HashMap<>();
-                            param.put("ids", ids);
-                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove",
-                                    param, header, responseListener,
-                                    new TypeToken<ResponseDataItem>() {
+                            param.put("pageSize", pageSize + "");
+                            param.put("current", current + "");
+                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/getBoardTasksList",
+                                    param,
+                                    header,
+                                    responseListener, new TypeToken<StatisticsProjectResponseData>() {
                                     }.getType());
                         }
                     }
@@ -312,47 +321,4 @@ public class DataAcquisitionUtil {
         }
     }
 
-    /**
-     * 删除任务
-     *
-     * @param responseListener
-     */
-    public void updateFile(File file, RequestUtil.OnResponseListener responseListener) {
-
-        if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
-            Map<String, String> header = new HashMap<>();
-            header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-            Map<String, String> param = new HashMap<>();
-            param.put("biz", "钻井");
-            param.put("taskId", "1447820287457382403");
-            param.put("groupType", "钻井");
-            param.put("groupName", "钻井");
-            param.put("fileIndicator", "p1");
-            RequestUtil.getInstance().requestFileHttp("http://121.36.58.193/blade-system/fieldInspectTask/uploadFile", param, file, header, responseListener, List.class);
-        } else {
-//            Login("TEST1", "地调局TEST1", "1234", new RequestUtil.OnResponseListener<UserInfo>() {
-//                @Override
-//                public void onsuccess(UserInfo o) {
-//                    Map<String, String> header = new HashMap<>();
-//                    header.put("Authorization", "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==");
-//                    header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-//                    Map<String, String> param = new HashMap<>();
-//                    param.put("eventId", "4");
-//                    param.put("taskType", "测井");
-//                    param.put("wellName", "JH002");
-//                    param.put("location", "2000,2002");
-//                    param.put("sitePhotos", "0XXX0X3");
-//                    param.put("sitePhotos2", "0XXX0XX");
-//                    param.put("sitePhotos3", "");
-//                    RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove", param, header, responseListener, List.class);
-//                }
-//
-//                @Override
-//                public void fail(String code, String message) {
-//                    Log.e(TAG + "fieldPlanProject", "errorcode:" + code + "  message:" + message);
-//                }
-//            });
-        }
-    }
 }

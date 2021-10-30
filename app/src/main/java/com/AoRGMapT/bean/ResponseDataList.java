@@ -45,6 +45,7 @@ public class ResponseDataList {
 
     private int code;
     private boolean success;
+    private String msg;
 
     public int getCode() {
         return code;
@@ -62,7 +63,13 @@ public class ResponseDataList {
         this.success = success;
     }
 
+    public String getMsg() {
+        return msg;
+    }
 
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 
     public class DataItem<E> {
 

@@ -1,29 +1,19 @@
 package com.AoRGMapT;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,22 +21,17 @@ import com.AoRGMapT.adapter.ImageAdapter;
 import com.AoRGMapT.bean.ImageBean;
 import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.UpdateFileResponseData;
 import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.EncapsulationImageUrl;
 import com.AoRGMapT.util.LocationUtil;
 import com.AoRGMapT.util.RequestUtil;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationListener;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.google.gson.Gson;
-import com.hjq.permissions.OnPermissionCallback;
-import com.hjq.permissions.Permission;
-import com.hjq.permissions.XXPermissions;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,11 +40,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 井位确认
+ * 井位确定
  */
 public class WellLocationDeterminationActivity extends AppCompatActivity {
 
-    private final String TAG = "WellLocationDeterminationActivity";
+    private final static String TAG = "WellLocationDeterminationActivity";
 
     //x坐标
     private EditText mEditX;
@@ -86,12 +71,16 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
     private GridView mGridResident;
     private ImageAdapter mResidentImageAdapter;
     List<ImageBean> mResidentImageBeans = new ArrayList<>();
+    //要删除的图片列表
+    private List<String> deleteImageList = new ArrayList<>();
+    //当前的项目
+    private PlanBean mPlanBean;
 
     //0交通情况 1地理情况 2 居民情况
     private int mChooseImageType = 0;
 
     private TextView project_name;
-    private EditText well_name;
+    private EditText wellName;
     private EditText ed_altitude;
     private EditText ed_x;
     private EditText ed_y;
@@ -115,7 +104,6 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_data);
 
-
         id = getIntent().getStringExtra("id");
 
         mEditX = findViewById(R.id.ed_x);
@@ -127,7 +115,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         mGridGeography = findViewById(R.id.grid_geography);
         mGridResident = findViewById(R.id.grid_resident);
         project_name = findViewById(R.id.project_name);
-        well_name = findViewById(R.id.well_name);
+        wellName = findViewById(R.id.wellName);
         ed_altitude = findViewById(R.id.ed_altitude);
         ed_x = findViewById(R.id.ed_x);
         ed_y = findViewById(R.id.ed_y);
@@ -152,31 +140,39 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Map<String, String> map = new HashMap<>();
-                map.put("event_id", BaseApplication.currentProject.getId());
-                map.put("task_type", "井位确认");
-                map.put("well_name", well_name.getText().toString());
+                Map<String, Object> map = new HashMap<>();
+                map.put("projectId", BaseApplication.currentProject.getId());
+                map.put("taskType", "井位确定");
+                map.put("wellName", wellName.getText().toString());
                 map.put("location", ed_location.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                map.put("record_data", mEditTime.getText().toString());
+                Date date = new Date(System.currentTimeMillis());
+                //map.put("recordDate", date);
                 map.put("remark", remark.getText().toString());
-                WellLocationDeterminationBean extend_data = new WellLocationDeterminationBean();
-                extend_data.setAltitude(ed_altitude.getText().toString());
-                extend_data.setX(ed_x.getText().toString());
-                extend_data.setY(ed_y.getText().toString());
-                extend_data.setStructural_location(structural_location.getText().toString());
-                extend_data.setAdministrative_region(administrative_region.getText().toString());
-                extend_data.setTraffic(traffic.getText().toString());
-                extend_data.setGeographical_situation(geographical_situation.getText().toString());
-                extend_data.setResidential_area(residential_area.getText().toString());
-                map.put("extend_data", new Gson().toJson(extend_data));
+                if (!TextUtils.isEmpty(id)) {
+                    map.put("id", id);
+                }
+                WellLocationDeterminationBean extendData = new WellLocationDeterminationBean();
+                extendData.setAltitude(ed_altitude.getText().toString());
+                extendData.setX(ed_x.getText().toString());
+                extendData.setY(ed_y.getText().toString());
+                extendData.setStructural_location(structural_location.getText().toString());
+                extendData.setAdministrative_region(administrative_region.getText().toString());
+                extendData.setTraffic(traffic.getText().toString());
+                extendData.setGeographical_situation(geographical_situation.getText().toString());
+                extendData.setResidential_area(residential_area.getText().toString());
+                map.put("extendData", new Gson().toJson(extendData));
                 DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                     @Override
                     public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
 
                         if (responseDataItem.isSuccess()) {
+                            //添加图片
+                            addPhotos(responseDataItem.getData().getId(), mPlanBean);
+                            if (deleteImageList != null && deleteImageList.size() > 0) {
+                                deletePhotoFile(responseDataItem.getData().getId());
+                            }
                             WellLocationDeterminationActivity.this.finish();
-
                         } else {
                             Toast.makeText(WellLocationDeterminationActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
                         }
@@ -191,7 +187,6 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
 
             }
         });
-
 
 
         setLocationInfo(BaseApplication.aMapLocation);
@@ -212,6 +207,8 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mResidentImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mTrafficImageBeans.remove(position);
                 mGridTraffic.setAdapter(mTrafficImageAdapter);
             }
@@ -237,6 +234,8 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mResidentImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mGeographyImageBeans.remove(position);
                 mGridGeography.setAdapter(mGeographyImageAdapter);
             }
@@ -262,8 +261,11 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mResidentImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mResidentImageBeans.remove(position);
                 mGridResident.setAdapter(mResidentImageAdapter);
+
             }
 
             @Override
@@ -282,7 +284,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         //设置项目名称和井号
         if (BaseApplication.currentProject != null) {
             project_name.setText(BaseApplication.currentProject.getProjectName());
-            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            wellName.setText(BaseApplication.currentProject.getDefaultWellName());
             recorder.setText(BaseApplication.userInfo.getUserName());
         }
 
@@ -316,14 +318,14 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
-                        PlanBean planBean = planBeanResponseDataItem.getData();
-                        if (planBean != null) {
-                            well_name.setText(planBean.getWellName());
-                            ed_location.setText(planBean.getLocation());
-                            recorder.setText(planBean.getRecorder());
-                            remark.setText(planBean.getRemark());
-                            mEditTime.setText(planBean.getCreateTime());
-                            WellLocationDeterminationBean determinationBean = new Gson().fromJson(planBean.getExtendData(), WellLocationDeterminationBean.class);
+                         mPlanBean = planBeanResponseDataItem.getData();
+                        if (mPlanBean != null) {
+                            wellName.setText(mPlanBean.getWellName());
+                            ed_location.setText(mPlanBean.getLocation());
+                            recorder.setText(mPlanBean.getRecorder());
+                            remark.setText(mPlanBean.getRemark());
+                            mEditTime.setText(mPlanBean.getCreateTime());
+                            WellLocationDeterminationBean determinationBean = new Gson().fromJson(mPlanBean.getExtendData(), WellLocationDeterminationBean.class);
                             if (determinationBean != null) {
                                 ed_altitude.setText(determinationBean.getAltitude());
                                 ed_x.setText(determinationBean.getX());
@@ -333,6 +335,36 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
                                 traffic.setText(determinationBean.getTraffic());
                                 geographical_situation.setText(determinationBean.getGeographical_situation());
                                 residential_area.setText(determinationBean.getResidential_area());
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
+                                //交通图片
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mTrafficImageBeans.add(mTrafficImageBeans.size() - 1, imageBean);
+                                }
+                                mTrafficImageAdapter.notifyDataSetChanged();
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos2()) && mPlanBean.getFiles2() != null) {
+                                //地理情况
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mGeographyImageBeans.add(mGeographyImageBeans.size() - 1, imageBean);
+                                }
+                                mGeographyImageAdapter.notifyDataSetChanged();
+                            }
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos3()) && mPlanBean.getFiles3() != null) {
+                                //居民点情况
+                                for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
+                                    ImageBean imageBean = new ImageBean(null, null, 0);
+                                    imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                    imageBean.setId(photo.getId());
+                                    mResidentImageBeans.add(mResidentImageBeans.size() - 1, imageBean);
+                                }
+                                mResidentImageAdapter.notifyDataSetChanged();
                             }
                         }
                     }
@@ -347,65 +379,122 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         } else {
             tv_remove.setVisibility(View.GONE);
         }
-
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        String picturePath = null;
+
         if (requestCode == 100 && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
-
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
             Cursor cursor = getContentResolver().query(selectedImage,
                     filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-
-            String picturePath = cursor.getString(columnIndex);
-
+            picturePath = cursor.getString(columnIndex);
             cursor.close();
-
-
-            Glide.with(this).asBitmap().load(new File(picturePath)).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-
-                    if (mChooseImageType == 0) {
-                        mTrafficImageBeans.add(mTrafficImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridTraffic.setAdapter(mTrafficImageAdapter);
-                    } else if (mChooseImageType == 1) {
-                        mGeographyImageBeans.add(mGeographyImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridGeography.setAdapter(mGeographyImageAdapter);
-                    } else {
-                        mResidentImageBeans.add(mResidentImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridResident.setAdapter(mResidentImageAdapter);
-                    }
-                }
-            });
-
-
         } else if (requestCode == 200 && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap bitmap = extras.getParcelable("data");
-                if (mChooseImageType == 0) {
-                    mTrafficImageBeans.add(mTrafficImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridTraffic.setAdapter(mTrafficImageAdapter);
-                } else if (mChooseImageType == 1) {
-                    mGeographyImageBeans.add(mGeographyImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridGeography.setAdapter(mGeographyImageAdapter);
-                } else {
-                    mResidentImageBeans.add(mResidentImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridResident.setAdapter(mResidentImageAdapter);
-                }
+            picturePath = ChooseImageDialog.getInstance().getPhotoFile().getAbsolutePath();
+        }
+        if (!TextUtils.isEmpty(picturePath)) {
+
+            if (mChooseImageType == 0) {
+                mTrafficImageBeans.add(mTrafficImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridTraffic.setAdapter(mTrafficImageAdapter);
+            } else if (mChooseImageType == 1) {
+                mGeographyImageBeans.add(mGeographyImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridGeography.setAdapter(mGeographyImageAdapter);
+            } else {
+                mResidentImageBeans.add(mResidentImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridResident.setAdapter(mResidentImageAdapter);
             }
         }
 
+
     }
 
+
+    //上传图片信息
+    private void updatePhotos(String taskid, String fileIndicator, List<ImageBean> imageBeans, List<PlanBean.PhotoFile> photoFiles) {
+
+        String bucketId = "";
+        if (photoFiles != null && photoFiles.size() > 0) {
+            bucketId = photoFiles.get(0).getBucketId();
+        }
+
+        Map<String, String> param = new HashMap<>();
+        param.put("biz", "井位确定");
+        param.put("taskId", taskid);
+        param.put("bucketName", "井位确定");
+        param.put("bucketType", "井位确定");
+        param.put("bucketId", bucketId);
+        param.put("fileIndicator", fileIndicator);
+        DataAcquisitionUtil.getInstance().updateFile(imageBeans, param, new RequestUtil.OnResponseListener<ResponseDataItem<UpdateFileResponseData.FileData>>() {
+            @Override
+            public void onsuccess(ResponseDataItem<UpdateFileResponseData.FileData> fileDataResponseDataItem) {
+                if (fileDataResponseDataItem.isSuccess()) {
+                    Log.e(TAG, fileIndicator + "图片提交成功");
+                } else {
+                    Log.e(TAG, fileIndicator + "图片提交失败");
+                }
+            }
+
+            @Override
+            public void fail(String code, String message) {
+                Log.e(TAG, "图片提交失败");
+            }
+        });
+    }
+
+    //新增图片
+    private void addPhotos(String taskid, PlanBean planBean) {
+        if (mTrafficImageBeans != null && mTrafficImageBeans.size() > 0) {
+            updatePhotos(taskid, "p1", mTrafficImageBeans, planBean.getFiles());
+        }
+        if (mGeographyImageBeans != null && mGeographyImageBeans.size() > 0) {
+            updatePhotos(taskid, "p2", mGeographyImageBeans, planBean.getFiles2());
+        }
+        if (mResidentImageBeans != null && mResidentImageBeans.size() > 0) {
+            updatePhotos(taskid, "p3", mResidentImageBeans, planBean.getFiles3());
+        }
+    }
+
+
+    //删除照片信息
+    private void deletePhotoFile(String taskid) {
+
+        if (deleteImageList != null && deleteImageList.size() > 0) {
+            String fileids = "";
+            for (int i = 0; i < deleteImageList.size(); i++) {
+                if (i == deleteImageList.size() - 1) {
+                    fileids = deleteImageList.get(i);
+                } else {
+                    fileids = deleteImageList.get(i) + ",";
+                }
+
+            }
+
+            DataAcquisitionUtil.getInstance().deleteFile(taskid, fileids, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                @Override
+                public void onsuccess(ResponseDataItem responseDataItem) {
+                    if (responseDataItem.isSuccess()) {
+                        Log.e(TAG, "删除文件成功");
+                    } else {
+                        Log.e(TAG, "删除文件失败");
+                    }
+
+                }
+
+                @Override
+                public void fail(String code, String message) {
+                    Log.e(TAG, "删除文件失败");
+                }
+            });
+        }
+    }
 
     /**
      * 设置定位信息
@@ -416,7 +505,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
             //停止定位
             LocationUtil.getInstance().stopLocation();
             BaseApplication.aMapLocation = aMapLocation;
-            if (!TextUtils.isEmpty(id)) {
+            if (TextUtils.isEmpty(id)) {
                 mEditX.setText(aMapLocation.getLatitude() + "");
                 mEditY.setText(aMapLocation.getLongitude() + "");
                 mEditLocation.setText(aMapLocation.getAddress());

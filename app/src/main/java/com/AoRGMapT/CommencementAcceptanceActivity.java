@@ -26,6 +26,7 @@ import com.AoRGMapT.bean.ResponseDataItem;
 import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.EncapsulationImageUrl;
 import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -70,6 +71,11 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
     private ImageAdapter mRectificationImageAdapter;
     List<ImageBean> mRectificationImageBeans = new ArrayList<>();
 
+    //要删除的图片列表
+    private List<String> deleteImageList = new ArrayList<>();
+    //当前的项目
+    private PlanBean mPlanBean;
+
     //0验收意见与专家名单 1环评记录 2 现场照片 3成果验收记录
     private int mChooseImageType = 0;
 
@@ -77,7 +83,7 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
     //当前项目的id
     private String id;
 
-    private EditText well_name;
+    private EditText wellName;
     private TextView project_name;
     private EditText recorder;
     private TextView remark;
@@ -97,7 +103,7 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
         mGridScene = findViewById(R.id.grid_scene);
         mGridRectification = findViewById(R.id.grid_rectification);
 
-        well_name = findViewById(R.id.well_name);
+        wellName = findViewById(R.id.wellName);
         project_name = findViewById(R.id.project_name);
         recorder = findViewById(R.id.recorder);
         remark = findViewById(R.id.remark);
@@ -113,18 +119,26 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Map<String, String> map = new HashMap<>();
-                map.put("event_id", BaseApplication.currentProject.getId());
-                map.put("task_type", "开工验收");
-                map.put("well_name", well_name.getText().toString());
+                Map<String, Object> map = new HashMap<>();
+                map.put("projectId", BaseApplication.currentProject.getId());
+                map.put("taskType", "开工验收");
+                map.put("wellName", wellName.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                map.put("record_data", mEditTime.getText().toString());
+                //map.put("recordDate", mEditTime.getText().toString());
                 map.put("remark", remark.getText().toString());
+                if (!TextUtils.isEmpty(id)) {
+                    map.put("id", id);
+                }
                 DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                     @Override
                     public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
 
                         if (responseDataItem.isSuccess()) {
+                            //添加图片
+                            addPhotos(responseDataItem.getData().getId(), mPlanBean);
+                            if (deleteImageList != null && deleteImageList.size() > 0) {
+                                EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
+                            }
                             CommencementAcceptanceActivity.this.finish();
 
                         } else {
@@ -152,6 +166,8 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mCheckImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mCheckImageBeans.remove(position);
                 mGridCheck.setAdapter(mCheckImageAdapter);
             }
@@ -177,6 +193,8 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mEiaImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mEiaImageBeans.remove(position);
                 mGridEia.setAdapter(mEiaImageAdapter);
             }
@@ -201,6 +219,8 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mSceneImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mSceneImageBeans.remove(position);
                 mGridScene.setAdapter(mSceneImageAdapter);
             }
@@ -225,6 +245,8 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mRectificationImageBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mRectificationImageBeans.remove(position);
                 mGridRectification.setAdapter(mRectificationImageAdapter);
             }
@@ -245,7 +267,7 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
         //设置项目名称和井号
         if (BaseApplication.currentProject != null) {
             project_name.setText(BaseApplication.currentProject.getProjectName());
-            well_name.setText(BaseApplication.currentProject.getDefaultWellName());
+            wellName.setText(BaseApplication.currentProject.getDefaultWellName());
             recorder.setText(BaseApplication.userInfo.getUserName());
         }
 
@@ -279,13 +301,49 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
-                        PlanBean planBean = planBeanResponseDataItem.getData();
-                        if (planBean != null) {
-                            well_name.setText(planBean.getWellName());
-                            recorder.setText(planBean.getRecorder());
-                            remark.setText(planBean.getRemark());
-                            mEditTime.setText(planBean.getCreateTime());
+                         mPlanBean = planBeanResponseDataItem.getData();
+                        if (mPlanBean != null) {
+                            wellName.setText(mPlanBean.getWellName());
+                            recorder.setText(mPlanBean.getRecorder());
+                            remark.setText(mPlanBean.getRemark());
+                            mEditTime.setText(mPlanBean.getCreateTime());
 
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mCheckImageBeans.add(mCheckImageBeans.size() - 1, imageBean);
+                            }
+                            mCheckImageAdapter.notifyDataSetChanged();
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos2()) && mPlanBean.getFiles2() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mEiaImageBeans.add(mEiaImageBeans.size() - 1, imageBean);
+                            }
+                            mEiaImageAdapter.notifyDataSetChanged();
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos3()) && mPlanBean.getFiles3() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mSceneImageBeans.add(mSceneImageBeans.size() - 1, imageBean);
+                            }
+                            mSceneImageAdapter.notifyDataSetChanged();
+                        }
+                        if (!TextUtils.isEmpty(mPlanBean.getSitePhotos4()) && mPlanBean.getFiles4() != null) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles4()) {
+                                ImageBean imageBean = new ImageBean(null, null, 0);
+                                imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
+                                imageBean.setId(photo.getId());
+                                mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, imageBean);
+                            }
+                            mRectificationImageAdapter.notifyDataSetChanged();
                         }
                     }
 
@@ -314,6 +372,7 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        String picturePath = null;
         if (requestCode == 100 && resultCode == RESULT_OK && null != data) {
 
             Uri selectedImage = data.getData();
@@ -325,51 +384,64 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
 
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
 
             cursor.close();
 
-
-            Glide.with(this).asBitmap().load(new File(picturePath)).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-
-                    if (mChooseImageType == 0) {
-                        mCheckImageBeans.add(mCheckImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridCheck.setAdapter(mCheckImageAdapter);
-                    } else if (mChooseImageType == 1) {
-                        mEiaImageBeans.add(mEiaImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridEia.setAdapter(mEiaImageAdapter);
-                    } else if (mChooseImageType == 2) {
-                        mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridScene.setAdapter(mSceneImageAdapter);
-                    } else if (mChooseImageType == 3) {
-                        mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
-                        mGridRectification.setAdapter(mRectificationImageAdapter);
-                    }
-                }
-            });
-
-
         } else if (requestCode == 200 && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap bitmap = extras.getParcelable("data");
-                if (mChooseImageType == 0) {
-                    mCheckImageBeans.add(mCheckImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridCheck.setAdapter(mCheckImageAdapter);
-                } else if (mChooseImageType == 1) {
-                    mEiaImageBeans.add(mEiaImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridEia.setAdapter(mEiaImageAdapter);
-                } else if (mChooseImageType == 2) {
-                    mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridScene.setAdapter(mSceneImageAdapter);
-                } else if (mChooseImageType == 3) {
-                    mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(null, bitmap, 0));
-                    mGridRectification.setAdapter(mRectificationImageAdapter);
-                }
+            picturePath = ChooseImageDialog.getInstance().getPhotoFile().getAbsolutePath();
+        }
+        if (!TextUtils.isEmpty(picturePath)) {
+
+            if (mChooseImageType == 0) {
+                mCheckImageBeans.add(mCheckImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridCheck.setAdapter(mCheckImageAdapter);
+            } else if (mChooseImageType == 1) {
+                mEiaImageBeans.add(mEiaImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridEia.setAdapter(mEiaImageAdapter);
+            } else if (mChooseImageType == 2) {
+                mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridScene.setAdapter(mSceneImageAdapter);
+            } else if (mChooseImageType == 3) {
+                mRectificationImageBeans.add(mRectificationImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridRectification.setAdapter(mRectificationImageAdapter);
             }
+        }
+    }
+
+    //新增图片
+    private void addPhotos(String taskid, PlanBean planBean) {
+
+
+        if (mCheckImageBeans != null && mCheckImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles = planBean.getFiles();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "开工验收", "p1", mCheckImageBeans, photoFiles);
+        }
+        if (mEiaImageBeans != null && mEiaImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles2 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles2 = planBean.getFiles2();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "开工验收", "p2", mEiaImageBeans, photoFiles2);
+        }
+        if (mSceneImageBeans != null && mSceneImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles3 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles3 = planBean.getFiles3();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "开工验收", "p3", mSceneImageBeans, photoFiles3);
+        }
+        if (mRectificationImageBeans != null && mCheckImageBeans.size() > 0) {
+            List<PlanBean.PhotoFile> photoFiles4 = new ArrayList<>();
+            if (planBean != null) {
+                photoFiles4 = planBean.getFiles4();
+            }
+            EncapsulationImageUrl.updatePhotos(taskid, "开工验收", "p4", mRectificationImageBeans, photoFiles4);
         }
 
     }
+
 }

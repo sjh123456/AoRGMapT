@@ -24,7 +24,7 @@ public class UserInfo {
     private Map<String, Object> extend;
 
     public String getAccessToken() {
-        return accessToken;
+        return "bearer " + accessToken;
     }
 
     public void setAccessToken(String accessToken) {

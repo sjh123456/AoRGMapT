@@ -1,6 +1,7 @@
 package com.AoRGMapT.adapter;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.AoRGMapT.R;
 import com.AoRGMapT.bean.ImageBean;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +60,12 @@ public class ImageAdapter extends BaseAdapter {
 
         if (mImageBeans.get(i).getType() == 0) {
 
-            viewHolder.ivpng.setImageBitmap(mImageBeans.get(i).getBitmap());
+            if (TextUtils.isEmpty(mImageBeans.get(i).getImageUrl())) {
+                viewHolder.ivpng.setImageBitmap(mImageBeans.get(i).getBitmap());
+            } else {
+                Glide.with(mContext).
+                        load(mImageBeans.get(i).getImageUrl()).into(viewHolder.ivpng);
+            }
             viewHolder.ivcancle.setVisibility(View.VISIBLE);
             viewHolder.ivcancle.setOnClickListener(new View.OnClickListener() {
                 @Override

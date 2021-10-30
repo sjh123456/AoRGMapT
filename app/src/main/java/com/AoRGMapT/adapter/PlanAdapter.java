@@ -2,6 +2,7 @@ package com.AoRGMapT.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +12,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.AoRGMapT.AchievementAcceptanceActivity;
 import com.AoRGMapT.CommencementAcceptanceActivity;
+import com.AoRGMapT.CoreDescriptionActivity;
+import com.AoRGMapT.FieldAcceptanceActivity;
 import com.AoRGMapT.FieldConstructionLoggingActivity;
+import com.AoRGMapT.FracturingTestActivity;
+import com.AoRGMapT.QualityTestingActivity;
 import com.AoRGMapT.R;
+import com.AoRGMapT.ReclamationActivity;
+import com.AoRGMapT.SiteConstructionInputActivity;
 import com.AoRGMapT.SiteConstructionWellDrillingActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
@@ -61,16 +69,37 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
             @Override
             public void onClick(View v) {
                 Intent intent;
+
                 if ("井位确定".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, WellLocationDeterminationActivity.class);
                 } else if ("井场准备".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, WellSitePreparationActivity.class);
                 } else if ("开工验收".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, CommencementAcceptanceActivity.class);
-                } else if("钻井施工".equals(item.getTaskType())){
+                } else if ("钻井施工".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, SiteConstructionWellDrillingActivity.class);
-                }else {
+                } else if ("测井施工".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, FieldConstructionLoggingActivity.class);
+                } else if ("岩心描述".equals(item.getTaskType())) {
+                    intent = new Intent(PlanAdapter.this.context, CoreDescriptionActivity.class);
+                } else if ("野外验收".equals(item.getTaskType())) {
+                    //野外验收
+                    intent = new Intent(PlanAdapter.this.context, FieldAcceptanceActivity.class);
+                } else if ("压裂试油".equals(item.getTaskType())) {
+                    //压裂试油
+                    intent = new Intent(PlanAdapter.this.context, FracturingTestActivity.class);
+                } else if ("质量检查".equals(item.getTaskType())) {
+                    //质量检查
+                    intent = new Intent(PlanAdapter.this.context, QualityTestingActivity.class);
+                } else if ("复耕复垦".equals(item.getTaskType())) {
+                    //复耕复垦
+                    intent = new Intent(PlanAdapter.this.context, ReclamationActivity.class);
+                } else if ("录井施工".equals(item.getTaskType())) {
+                    //录井施工
+                    intent = new Intent(PlanAdapter.this.context, SiteConstructionInputActivity.class);
+                } else {
+                    //成果验收
+                    intent = new Intent(PlanAdapter.this.context, AchievementAcceptanceActivity.class);
                 }
                 intent.putExtra("id", item.getId());
                 context.startActivity(intent);
