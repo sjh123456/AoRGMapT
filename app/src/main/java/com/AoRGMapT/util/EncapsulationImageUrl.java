@@ -63,9 +63,9 @@ public class EncapsulationImageUrl {
             String fileids = "";
             for (int i = 0; i < deleteImageList.size(); i++) {
                 if (i == deleteImageList.size() - 1) {
-                    fileids = deleteImageList.get(i);
+                    fileids = fileids + deleteImageList.get(i);
                 } else {
-                    fileids = deleteImageList.get(i) + ",";
+                    fileids = fileids + deleteImageList.get(i) + ",";
                 }
 
             }

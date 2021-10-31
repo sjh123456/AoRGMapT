@@ -1,6 +1,7 @@
 package com.AoRGMapT.ui.home;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -97,6 +98,24 @@ public class HomeFragment extends Fragment {
                         refreshLayout.finishRefreshing();
                         //打开上拉加载的功能
                         binding.lingrefresh.setEnableLoadmore(true);
+                        DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
+                            @Override
+                            public void onsuccess(ProjectResponseData projectResponseData) {
+
+                                if (projectResponseData.getData() != null
+                                        && projectResponseData.getData() != null
+                                        && projectResponseData.getData().getRecords() != null) {
+                                    BaseApplication.projectBeanDetailList.clear();
+                                    BaseApplication.projectBeanDetailList.addAll(projectResponseData.getData().getRecords());
+                                    setProjectTaskCount();
+                                }
+                            }
+
+                            @Override
+                            public void fail(String code, String message) {
+
+                            }
+                        });
 
                     }
 
@@ -109,6 +128,7 @@ public class HomeFragment extends Fragment {
                         binding.lingrefresh.setEnableLoadmore(true);
                     }
                 });
+
 
             }
 
@@ -132,6 +152,23 @@ public class HomeFragment extends Fragment {
                             Log.e(TAG, "数据解析失败");
                         }
                         refreshLayout.finishLoadmore();
+                        DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
+                            @Override
+                            public void onsuccess(ProjectResponseData projectResponseData) {
+
+                                if (projectResponseData.getData() != null
+                                        && projectResponseData.getData() != null
+                                        && projectResponseData.getData().getRecords() != null) {
+                                    BaseApplication.projectBeanDetailList.addAll(projectResponseData.getData().getRecords());
+                                    setProjectTaskCount();
+                                }
+                            }
+
+                            @Override
+                            public void fail(String code, String message) {
+
+                            }
+                        });
                     }
 
                     @Override
@@ -142,13 +179,14 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
+
             }
         });
 
         binding.ivSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChooseHomeDialog.getInstance().showDialog(HomeFragment.this.getActivity(), true,new View.OnClickListener() {
+                ChooseHomeDialog.getInstance().showDialog(HomeFragment.this.getActivity(), true, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //刷新项目信息
@@ -225,6 +263,24 @@ public class HomeFragment extends Fragment {
                         //显示当前项目信息
                         binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
                     }
+                    DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
+                        @Override
+                        public void onsuccess(ProjectResponseData projectResponseData) {
+
+                            if (projectResponseData.getData() != null
+                                    && projectResponseData.getData() != null
+                                    && projectResponseData.getData().getRecords() != null) {
+                                BaseApplication.projectBeanDetailList.clear();
+                                BaseApplication.projectBeanDetailList.addAll(projectResponseData.getData().getRecords());
+                                setProjectTaskCount();
+                            }
+                        }
+
+                        @Override
+                        public void fail(String code, String message) {
+
+                        }
+                    });
                 } catch (Exception ex) {
                     Log.e(TAG, "数据解析失败");
                 }
@@ -235,6 +291,7 @@ public class HomeFragment extends Fragment {
                 Log.e(TAG, "获取项目列表失败：" + code + message);
             }
         });
+
 
     }
 
@@ -253,5 +310,19 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+
+    private void setProjectTaskCount() {
+        for (ProjectBean bean1 : BaseApplication.projectBeanList) {
+            for (ProjectBean bean2 : BaseApplication.projectBeanDetailList) {
+                if (TextUtils.equals(bean1.getId(), bean2.getId())) {
+                    bean1.setDefaultWellName(bean2.getDefaultWellName());
+                    break;
+                }
+
+            }
+
+        }
     }
 }

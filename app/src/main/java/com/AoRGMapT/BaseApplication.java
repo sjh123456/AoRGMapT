@@ -20,6 +20,7 @@ public class BaseApplication extends Application {
     public static UserInfo userInfo;
     //项目列表
     public static List<ProjectBean> projectBeanList = new ArrayList<>();
+    public static List<ProjectBean> projectBeanDetailList=new ArrayList<>();
     //当前的设备列表
     public static ProjectBean currentProject;
 

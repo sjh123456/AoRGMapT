@@ -49,7 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginRight="20dp"
             android:text="1号井位"
             android:textColor="@color/black"
             android:textSize="15sp" />
@@ -79,13 +79,22 @@
             android:textColor="@color/black"
             android:textSize="15sp" />
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_weight="1"
+            android:layout_marginLeft="16dp"
             android:gravity="right"
-            android:text="完成时间:"
+            android:text="记录时间:"
             android:textColor="@color/black"
             android:textSize="15sp" />
 
@@ -95,7 +104,6 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="10dp"
-            android:minWidth="115dp"
             android:textColor="@color/black"
             android:textSize="15sp" />
     </LinearLayout>
@@ -107,28 +115,11 @@
         android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:text="更新人:"
-            android:textColor="@color/black"
-            android:textSize="15sp" />
-
-        <TextView
-            android:id="@+id/tv_update_people"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:text="张伟"
-            android:textColor="@color/black"
-            android:textSize="15sp" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_weight="1"
             android:gravity="right"
             android:text="更新时间:"
             android:textColor="@color/black"
@@ -140,7 +131,6 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="10dp"
-            android:minWidth="115dp"
             android:textColor="@color/black"
             android:textSize="15sp" />
     </LinearLayout>

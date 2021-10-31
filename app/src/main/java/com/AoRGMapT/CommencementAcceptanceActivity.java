@@ -47,7 +47,7 @@ import java.util.Map;
 public class CommencementAcceptanceActivity extends AppCompatActivity {
 
     private final String TAG = "CommencementAcceptanceActivity";
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
 
@@ -306,7 +306,14 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
 
                         }
                         if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
@@ -363,7 +370,7 @@ public class CommencementAcceptanceActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+     //   SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));

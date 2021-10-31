@@ -28,12 +28,16 @@ import com.AoRGMapT.WellSitePreparationActivity;
 import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.ProjectBean;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
+    private final static String TAG="PlanAdapter";
 
     private List<PlanBean> itemList;
     private Context context;
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
 
     public PlanAdapter(List<PlanBean> itemList, Context context) {
         this.itemList = itemList;
@@ -61,10 +65,25 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
 
         holder.tvWellNum.setText(item.getWellName());
         holder.tvPlanClass.setText(item.getTaskType());
-        holder.tvComTime.setText(item.getRecordDate());
+
+
+
+        String recordertime=item.getRecordDate();
+        try{
+            recordertime=simpleDateFormat.format(simpleDateFormat.parse(recordertime));
+        }catch (Exception ex){
+            Log.e(TAG,ex.getMessage());
+        }
+        holder.tvComTime.setText(recordertime);
         holder.tvPlanPeople.setText(item.getRecorder());
-        holder.tvUpdatePeople.setText(item.getUpdateUser());
-        holder.tvUpdateTime.setText(item.getUpdateTime());
+       //holder.tvUpdatePeople.setText(item.getUpdateUser());
+        String updateTime=item.getUpdateTime();
+        try{
+            updateTime=simpleDateFormat.format(simpleDateFormat.parse(updateTime));
+        }catch (Exception ex){
+            Log.e(TAG,ex.getMessage());
+        }
+        holder.tvUpdateTime.setText(updateTime);
         holder.item.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,7 +140,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
         TextView tvEdit;
         TextView tvCommit;
         TextView tvDelete;
-        TextView tvUpdatePeople;
+        //TextView tvUpdatePeople;
         TextView tvUpdateTime;
         View item;
 
@@ -139,7 +158,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
             tvDelete = view.findViewById(R.id.tv_delete);
             llOperation = view.findViewById(R.id.ll_operation);
             tvUpdateTime = view.findViewById(R.id.tv_update_time);
-            tvUpdatePeople = view.findViewById(R.id.tv_update_people);
+          //  tvUpdatePeople = view.findViewById(R.id.tv_update_people);
 
         }
 

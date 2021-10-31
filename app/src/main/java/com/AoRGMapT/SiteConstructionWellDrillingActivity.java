@@ -48,7 +48,7 @@ import java.util.Map;
 public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
 
     private final String TAG = "SiteConstructionWellDrillingActivity";
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
 
@@ -291,7 +291,14 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
                             SiteConstructionWellDrillingBean bean = new Gson().fromJson(mPlanBean.getExtendData(), SiteConstructionWellDrillingBean.class);
                             if (bean != null) {
                                 construction_days.setText(bean.getConstruction_days());
@@ -346,7 +353,7 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+      //  SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));
@@ -360,21 +367,21 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
             if (planBean != null) {
                 photoFiles = planBean.getFiles();
             }
-            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p1", mMorningMeetingImageBeans, photoFiles);
+            EncapsulationImageUrl.updatePhotos(taskid, "钻井施工", "p1", mMorningMeetingImageBeans, photoFiles);
         }
         if (mClassImageBeans != null && mClassImageBeans.size() > 0) {
             List<PlanBean.PhotoFile> photoFiles2 = new ArrayList<>();
             if (planBean != null) {
-                photoFiles2 = planBean.getFiles();
+                photoFiles2 = planBean.getFiles2();
             }
-            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p2", mClassImageBeans, photoFiles2);
+            EncapsulationImageUrl.updatePhotos(taskid, "钻井施工", "p2", mClassImageBeans, photoFiles2);
         }
         if (mSceneImageBeans != null && mSceneImageBeans.size() > 0) {
             List<PlanBean.PhotoFile> photoFiles3 = new ArrayList<>();
             if (planBean != null) {
-                photoFiles3 = planBean.getFiles();
+                photoFiles3 = planBean.getFiles3();
             }
-            EncapsulationImageUrl.updatePhotos(taskid, "成果验收", "p3", mSceneImageBeans, photoFiles3);
+            EncapsulationImageUrl.updatePhotos(taskid, "钻井施工", "p3", mSceneImageBeans, photoFiles3);
         }
 
 
@@ -403,13 +410,13 @@ public class SiteConstructionWellDrillingActivity extends AppCompatActivity {
         }
         if (!TextUtils.isEmpty(picturePath)) {
             if (mChooseImageType == 0) {
-                mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
             } else if (mChooseImageType == 1) {
-                mClassImageBeans.add(mClassImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mClassImageBeans.add(mClassImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridClass.setAdapter(mClassImageAdapter);
             } else if (mChooseImageType == 2) {
-                mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridScene.setAdapter(mSceneImageAdapter);
             }
         }

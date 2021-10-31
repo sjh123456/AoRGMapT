@@ -2,6 +2,8 @@ package com.AoRGMapT.bean;
 
 import android.text.TextUtils;
 
+import com.AoRGMapT.BaseApplication;
+
 public class ProjectBean {
 
     private int completedNum;
@@ -135,6 +137,7 @@ public class ProjectBean {
     }
 
     public String getDefaultWellName() {
+
         return defaultWellName;
     }
 

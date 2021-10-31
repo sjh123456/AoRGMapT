@@ -47,7 +47,7 @@ import java.util.Map;
 public class ReclamationActivity extends AppCompatActivity {
 
     private final static String TAG = "ReclamationActivity";
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
 
@@ -282,6 +282,8 @@ public class ReclamationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mImplementationBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mImplementationBeans.remove(position);
                 mGridImplementation.setAdapter(mImplementationAdapter);
             }
@@ -307,6 +309,8 @@ public class ReclamationActivity extends AppCompatActivity {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
+                ImageBean imageBean = mStateBeans.get(position);
+                deleteImageList.add(imageBean.getId());
                 mStateBeans.remove(position);
                 mGridState.setAdapter(mStateAdapter);
             }
@@ -368,7 +372,14 @@ public class ReclamationActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
                         }
 
                         if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
@@ -390,7 +401,7 @@ public class ReclamationActivity extends AppCompatActivity {
                             mOpinionImageAdapter.notifyDataSetChanged();
                         }
                         if (!TextUtils.isEmpty(mPlanBean.getSitePhotos3()) && mPlanBean.getFiles3() != null) {
-                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
                                 ImageBean imageBean = new ImageBean(null, null, 0);
                                 imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
                                 imageBean.setId(photo.getId());
@@ -399,7 +410,7 @@ public class ReclamationActivity extends AppCompatActivity {
                             mRectificationImageAdapter.notifyDataSetChanged();
                         }
                         if (!TextUtils.isEmpty(mPlanBean.getSitePhotos4()) && mPlanBean.getFiles4() != null) {
-                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
+                            for (PlanBean.PhotoFile photo : mPlanBean.getFiles4()) {
                                 ImageBean imageBean = new ImageBean(null, null, 0);
                                 imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
                                 imageBean.setId(photo.getId());
@@ -444,7 +455,7 @@ public class ReclamationActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+        //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));

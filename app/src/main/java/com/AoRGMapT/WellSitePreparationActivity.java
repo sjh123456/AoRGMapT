@@ -82,7 +82,7 @@ public class WellSitePreparationActivity extends AppCompatActivity {
 
     //0水源情况 1通电情况 2 井场平整条件  3环保保障措施 4青苗补偿情况
     private int mChooseImageType = 0;
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 
     private TextView project_name;
     private EditText wellName;
@@ -363,7 +363,15 @@ public class WellSitePreparationActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+
+                            mEditTime.setText(time);
                             WellSitePreparationBean sitePreparationBean = new Gson().fromJson(mPlanBean.getExtendData(), WellSitePreparationBean.class);
                             if (sitePreparationBean != null) {
                                 electrify.setText(sitePreparationBean.getElectrify());
@@ -437,7 +445,7 @@ public class WellSitePreparationActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));
@@ -507,19 +515,19 @@ public class WellSitePreparationActivity extends AppCompatActivity {
         }
         if (!TextUtils.isEmpty(picturePath)) {
             if (mChooseImageType == 0) {
-                mWaterImageBeans.add(mWaterImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mWaterImageBeans.add(mWaterImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridWater.setAdapter(mWaterImageAdapter);
             } else if (mChooseImageType == 1) {
-                mPowerOnImageBeans.add(mPowerOnImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mPowerOnImageBeans.add(mPowerOnImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridPowerOn.setAdapter(mPowerOnImageAdapter);
             } else if (mChooseImageType == 2) {
-                mLevelingConditionsImageBeans.add(mLevelingConditionsImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mLevelingConditionsImageBeans.add(mLevelingConditionsImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridLevelingConditions.setAdapter(mLevelingConditionsImageAdapter);
             } else if (mChooseImageType == 3) {
-                mEnvironmentalImageBeans.add(mEnvironmentalImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mEnvironmentalImageBeans.add(mEnvironmentalImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridEnvironmental.setAdapter(mEnvironmentalImageAdapter);
             } else if (mChooseImageType == 4) {
-                mYoungCropImageBeans.add(mYoungCropImageBeans.size() - 1, new ImageBean(null, BitmapFactory.decodeFile(picturePath), 0));
+                mYoungCropImageBeans.add(mYoungCropImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridYoungCrops.setAdapter(mYoungCropImageAdapter);
             }
         }

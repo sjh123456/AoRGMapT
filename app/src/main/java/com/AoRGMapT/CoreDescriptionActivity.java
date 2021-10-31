@@ -48,7 +48,7 @@ import java.util.Map;
 public class CoreDescriptionActivity extends AppCompatActivity {
 
     private final static String TAG = "CoreDescriptionActivity";
-
+   private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
 
@@ -118,7 +118,7 @@ public class CoreDescriptionActivity extends AppCompatActivity {
                 map.put("taskType", "岩心描述");
                 map.put("wellName", wellName.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                //map.put("recordDate", mEditTime.getText().toString());
+                map.put("recordDate", mEditTime.getText().toString());
                 map.put("remark", remark.getText().toString());
                 if (!TextUtils.isEmpty(id)) {
                     map.put("id", id);
@@ -129,6 +129,7 @@ public class CoreDescriptionActivity extends AppCompatActivity {
                 bean.setBottom_boundary_depth(bottom_boundary_depth.getText().toString());
                 bean.setHarvest_rate(harvest_rate.getText().toString());
                 bean.setHorizon(horizon.getText().toString());
+                bean.setTop_boundary_depth(top_boundary_depth.getText().toString());
                 bean.setLong_heart(long_heart.getText().toString());
                 bean.setSample_type(sample_type.getText().toString());
                 map.put("extendData", new Gson().toJson(bean));
@@ -229,7 +230,14 @@ public class CoreDescriptionActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
                             CoreDescriptionBean bean = new Gson().fromJson(mPlanBean.getExtendData(), CoreDescriptionBean.class);
                             if (bean != null) {
                                 core_description.setText(bean.getCore_description());
@@ -269,7 +277,7 @@ public class CoreDescriptionActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+       // SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));

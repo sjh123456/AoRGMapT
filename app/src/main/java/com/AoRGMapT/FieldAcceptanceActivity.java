@@ -48,7 +48,7 @@ public class FieldAcceptanceActivity extends AppCompatActivity {
 
 
     private final static String TAG = "FieldAcceptanceActivity";
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
 
@@ -124,7 +124,7 @@ public class FieldAcceptanceActivity extends AppCompatActivity {
                 map.put("taskType", "野外验收");
                 map.put("wellName", wellName.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                // map.put("recordDate", mEditTime.getText().toString());
+                 map.put("recordDate", mEditTime.getText().toString());
                 map.put("remark", remark.getText().toString());
                 if (!TextUtils.isEmpty(id)) {
                     map.put("id", id);
@@ -307,7 +307,14 @@ public class FieldAcceptanceActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
                         }
                         if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
                             for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
@@ -363,7 +370,7 @@ public class FieldAcceptanceActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+        //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));

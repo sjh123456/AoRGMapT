@@ -48,7 +48,7 @@ import java.util.Map;
 public class FracturingTestActivity extends AppCompatActivity {
 
     private final static String TAG = "FracturingTestActivity";
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
 
@@ -164,6 +164,7 @@ public class FracturingTestActivity extends AppCompatActivity {
                 extendData.setDaily_water_yield(daily_water_yield.getText().toString());
                 extendData.setRupture_name(rupture_name.getText().toString());
                 extendData.setSand_addition(sand_addition.getText().toString());
+                extendData.setPerforation_thickness(perforation_thickness.getText().toString());
                 extendData.setRupture_pressure(rupture_pressure.getText().toString());
                 map.put("extendData", new Gson().toJson(extendData));
                 DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
@@ -318,7 +319,14 @@ public class FracturingTestActivity extends AppCompatActivity {
                             wellName.setText(mPlanBean.getWellName());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
                             FracturingTestBean fracturingTestBean = new Gson().fromJson(mPlanBean.getExtendData(), FracturingTestBean.class);
                             if (fracturingTestBean != null) {
                                 fracturing_time.setText(fracturingTestBean.getFracturing_time());
@@ -334,6 +342,7 @@ public class FracturingTestActivity extends AppCompatActivity {
                                 perforation_depth.setText(fracturingTestBean.getPerforation_depth());
                                 rupture_pressure.setText(fracturingTestBean.getRupture_pressure());
                                 sand_addition.setText(fracturingTestBean.getSand_addition());
+                                perforation_thickness.setText(fracturingTestBean.getPerforation_thickness());
                             }
 
                             if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
@@ -383,7 +392,7 @@ public class FracturingTestActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+       // SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));

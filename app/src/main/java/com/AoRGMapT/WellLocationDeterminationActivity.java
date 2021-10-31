@@ -45,7 +45,7 @@ import java.util.Map;
 public class WellLocationDeterminationActivity extends AppCompatActivity {
 
     private final static String TAG = "WellLocationDeterminationActivity";
-
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //x坐标
     private EditText mEditX;
     //y坐标
@@ -146,8 +146,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
                 map.put("wellName", wellName.getText().toString());
                 map.put("location", ed_location.getText().toString());
                 map.put("recorder", recorder.getText().toString());
-                Date date = new Date(System.currentTimeMillis());
-                //map.put("recordDate", date);
+                map.put("recordDate", mEditTime.getText().toString());
                 map.put("remark", remark.getText().toString());
                 if (!TextUtils.isEmpty(id)) {
                     map.put("id", id);
@@ -324,7 +323,14 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
                             ed_location.setText(mPlanBean.getLocation());
                             recorder.setText(mPlanBean.getRecorder());
                             remark.setText(mPlanBean.getRemark());
-                            mEditTime.setText(mPlanBean.getCreateTime());
+                            String time = mPlanBean.getCreateTime();
+                            try {
+                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                                time = simpleDateFormat.format(date);
+                            } catch (Exception ex) {
+                                Log.e(TAG, "");
+                            }
+                            mEditTime.setText(time);
                             WellLocationDeterminationBean determinationBean = new Gson().fromJson(mPlanBean.getExtendData(), WellLocationDeterminationBean.class);
                             if (determinationBean != null) {
                                 ed_altitude.setText(determinationBean.getAltitude());
@@ -532,7 +538,7 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
      * 设置当前时间
      */
     private void setCurrentTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");// HH:mm:ss
+        // SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));
