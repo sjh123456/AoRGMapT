@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="录井"
+            android:text="录井-采集内容"
             android:textColor="@color/white"
             android:textSize="20sp" />
 
@@ -228,111 +228,9 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingTop="10dp"
-                android:paddingRight="10dp"
-                android:paddingBottom="10dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="现场照片:"
-                    android:textSize="15sp" />
 
 
-            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp">
-
-
-                <GridView
-                    android:id="@+id/grid_scene"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:numColumns="6"
-                    android:scrollbars="none"
-                    tools:listitem="@layout/grid_png_item" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
-                android:paddingBottom="10dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="录井总结:"
-                    android:textSize="15sp" />
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp">
-
-
-                <GridView
-                    android:id="@+id/grid_logging"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:numColumns="6"
-                    android:scrollbars="none"
-                    tools:listitem="@layout/grid_png_item" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp"
-                android:paddingBottom="10dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="早会记录:"
-                    android:textSize="15sp" />
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingRight="10dp">
-
-
-                <GridView
-                    android:id="@+id/grid_morning_meeting"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:numColumns="6"
-                    android:scrollbars="none"
-                    tools:listitem="@layout/grid_png_item" />
-
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

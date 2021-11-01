@@ -60,10 +60,16 @@
             android:name=".CoreDescriptionActivity"
             android:exported="true" />
         <activity
-            android:name=".SiteConstructionInputActivity"
+            android:name=".SiteConstructionInputCollectionContentActivity"
             android:exported="true" />
         <activity
-            android:name=".FieldConstructionLoggingActivity"
+            android:name=".SiteConstructionInputSiteDailyActivity"
+            android:exported="true" />
+        <activity
+            android:name=".FieldConstructionLoggingExplainActivity"
+            android:exported="true" />
+        <activity
+            android:name=".FieldConstructionLoggingSiteDailyActivity"
             android:exported="true" />
         <activity
             android:name=".SiteConstructionWellDrillingActivity"

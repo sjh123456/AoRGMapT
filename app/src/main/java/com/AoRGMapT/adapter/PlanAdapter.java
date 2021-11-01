@@ -16,17 +16,18 @@ import com.AoRGMapT.AchievementAcceptanceActivity;
 import com.AoRGMapT.CommencementAcceptanceActivity;
 import com.AoRGMapT.CoreDescriptionActivity;
 import com.AoRGMapT.FieldAcceptanceActivity;
-import com.AoRGMapT.FieldConstructionLoggingActivity;
+import com.AoRGMapT.FieldConstructionLoggingExplainActivity;
+import com.AoRGMapT.FieldConstructionLoggingSiteDailyActivity;
 import com.AoRGMapT.FracturingTestActivity;
 import com.AoRGMapT.QualityTestingActivity;
 import com.AoRGMapT.R;
 import com.AoRGMapT.ReclamationActivity;
-import com.AoRGMapT.SiteConstructionInputActivity;
+import com.AoRGMapT.SiteConstructionInputCollectionContentActivity;
+import com.AoRGMapT.SiteConstructionInputSiteDailyActivity;
 import com.AoRGMapT.SiteConstructionWellDrillingActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
 import com.AoRGMapT.bean.PlanBean;
-import com.AoRGMapT.bean.ProjectBean;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -97,8 +98,10 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                     intent = new Intent(PlanAdapter.this.context, CommencementAcceptanceActivity.class);
                 } else if ("钻井施工".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, SiteConstructionWellDrillingActivity.class);
-                } else if ("测井施工".equals(item.getTaskType())) {
-                    intent = new Intent(PlanAdapter.this.context, FieldConstructionLoggingActivity.class);
+                } else if ("测井施工-解释结论".equals(item.getTaskType())) {
+                    intent = new Intent(PlanAdapter.this.context, FieldConstructionLoggingExplainActivity.class);
+                }else if ("测井施工-现场日报".equals(item.getTaskType())) {
+                    intent = new Intent(PlanAdapter.this.context, FieldConstructionLoggingSiteDailyActivity.class);
                 } else if ("岩心描述".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, CoreDescriptionActivity.class);
                 } else if ("野外验收".equals(item.getTaskType())) {
@@ -113,10 +116,13 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                 } else if ("复耕复垦".equals(item.getTaskType())) {
                     //复耕复垦
                     intent = new Intent(PlanAdapter.this.context, ReclamationActivity.class);
-                } else if ("录井施工".equals(item.getTaskType())) {
+                } else if ("录井施工-采集内容".equals(item.getTaskType())) {
                     //录井施工
-                    intent = new Intent(PlanAdapter.this.context, SiteConstructionInputActivity.class);
-                } else {
+                    intent = new Intent(PlanAdapter.this.context, SiteConstructionInputCollectionContentActivity.class);
+                } else if ("录井施工-现场日报".equals(item.getTaskType())) {
+                    //录井施工
+                    intent = new Intent(PlanAdapter.this.context, SiteConstructionInputSiteDailyActivity.class);
+                }else {
                     //成果验收
                     intent = new Intent(PlanAdapter.this.context, AchievementAcceptanceActivity.class);
                 }

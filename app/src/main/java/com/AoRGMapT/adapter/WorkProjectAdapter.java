@@ -3,7 +3,6 @@ package com.AoRGMapT.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,41 +13,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.AoRGMapT.AchievementAcceptanceActivity;
-import com.AoRGMapT.BaseApplication;
-import com.AoRGMapT.ChartActivity;
 import com.AoRGMapT.CommencementAcceptanceActivity;
 import com.AoRGMapT.CoreDescriptionActivity;
 import com.AoRGMapT.FieldAcceptanceActivity;
-import com.AoRGMapT.FieldConstructionLoggingActivity;
+import com.AoRGMapT.FieldConstructionLoggingExplainActivity;
+import com.AoRGMapT.FieldConstructionLoggingSiteDailyActivity;
 import com.AoRGMapT.FracturingTestActivity;
-import com.AoRGMapT.PieChartActivity;
 import com.AoRGMapT.QualityTestingActivity;
 import com.AoRGMapT.R;
 import com.AoRGMapT.ReclamationActivity;
-import com.AoRGMapT.SiteConstructionInputActivity;
+import com.AoRGMapT.SiteConstructionInputCollectionContentActivity;
+import com.AoRGMapT.SiteConstructionInputSiteDailyActivity;
 import com.AoRGMapT.SiteConstructionWellDrillingActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
-import com.AoRGMapT.bean.UserInfo;
 import com.AoRGMapT.bean.WorkItemBean;
-import com.AoRGMapT.util.DataAcquisitionUtil;
-import com.AoRGMapT.util.LocationUtil;
-import com.amap.api.location.AMapLocation;
-import com.amap.api.location.AMapLocationListener;
+import com.AoRGMapT.util.ChooseModeDialog;
 
-import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.ViewHolder> {
 
@@ -84,12 +66,39 @@ public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.
                     intent = new Intent(WorkProjectAdapter.this.mContext, WellSitePreparationActivity.class);
                 } else if (position == 2) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, CommencementAcceptanceActivity.class);
-                }else if (position == 3) {
+                } else if (position == 3) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, SiteConstructionWellDrillingActivity.class);
                 } else if (position == 4) {
-                    intent = new Intent(WorkProjectAdapter.this.mContext, FieldConstructionLoggingActivity.class);
-                }else if (position == 5) {
-                    intent = new Intent(WorkProjectAdapter.this.mContext, SiteConstructionInputActivity.class);
+                    ChooseModeDialog.getIntent().showDialog(mContext, "现场日报", "解释结论", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(WorkProjectAdapter.this.mContext, FieldConstructionLoggingSiteDailyActivity.class);
+                            WorkProjectAdapter.this.mContext.startActivity(intent);
+                        }
+                    }, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(WorkProjectAdapter.this.mContext, FieldConstructionLoggingExplainActivity.class);
+                            WorkProjectAdapter.this.mContext.startActivity(intent);
+                        }
+                    });
+                    return;
+                } else if (position == 5) {
+
+                    ChooseModeDialog.getIntent().showDialog(mContext, "现场日报", "采集内容", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(WorkProjectAdapter.this.mContext, SiteConstructionInputSiteDailyActivity.class);
+                            WorkProjectAdapter.this.mContext.startActivity(intent);
+                        }
+                    }, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(WorkProjectAdapter.this.mContext, SiteConstructionInputCollectionContentActivity.class);
+                            WorkProjectAdapter.this.mContext.startActivity(intent);
+                        }
+                    });
+                    return;
                 } else if (position == 6) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, CoreDescriptionActivity.class);
                 } else if (position == 7) {

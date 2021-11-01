@@ -1,12 +1,7 @@
 package com.AoRGMapT;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,22 +14,17 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.AoRGMapT.adapter.ImageAdapter;
-import com.AoRGMapT.bean.FieldConstructionLoggingBean;
 import com.AoRGMapT.bean.ImageBean;
 import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.ResponseDataItem;
-import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
 import com.AoRGMapT.util.EncapsulationImageUrl;
 import com.AoRGMapT.util.RequestUtil;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.google.gson.Gson;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 测井施工
+ * 录井施工
  */
-public class FieldConstructionLoggingActivity extends AppCompatActivity {
+public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
 
-    private final String TAG = "FieldConstructionLoggingActivity";
+    private final static String TAG = "SiteConstructionInputActivity";
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //记录时间
     private EditText mEditTime;
@@ -57,63 +47,58 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
     private ImageAdapter mMorningMeetingImageAdapter;
     List<ImageBean> mMorningMeetingImageBeans = new ArrayList<>();
 
-    //分段测井曲线
-    private GridView mGridSubsection;
-    private ImageAdapter mSubsectionImageAdapter;
-    List<ImageBean> mSubsectionImageBeans = new ArrayList<>();
+    //录井
+    private GridView mGridLogging;
+    private ImageAdapter mLogginfImageAdapter;
+    List<ImageBean> mLoggingImageBeans = new ArrayList<>();
 
     //现场照片
     private GridView mGridScene;
     private ImageAdapter mSceneImageAdapter;
     List<ImageBean> mSceneImageBeans = new ArrayList<>();
+
+
     //要删除的图片列表
     private List<String> deleteImageList = new ArrayList<>();
     //当前的项目
     private PlanBean mPlanBean;
 
-    //0早会记录 1分段测井曲线 2 现场照片 
+    //0早会记录 1录井 2 现场照片
     private int mChooseImageType = 0;
-
-    //当前项目的id
-    private String id;
 
     private TextView project_name;
     private EditText wellName;
-    private EditText horizon;
-    private EditText top_boundary_depth;
-    private EditText bottom_boundary_depth;
-    private EditText thickness;
-    private EditText interpretation_conclusion;
     private EditText recorder;
     private EditText remark;
     private TextView tv_save;
     private TextView tv_remove;
 
+    //当前项目的id
+    private String id;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_field_construction_logging);
+        setContentView(R.layout.activity_site_construction_input_site_daily);
+
         id = getIntent().getStringExtra("id");
 
         mEditTime = findViewById(R.id.ed_time);
         mGridMorningMeeting = findViewById(R.id.grid_morning_meeting);
-        mGridSubsection = findViewById(R.id.grid_subsection);
+        mGridLogging = findViewById(R.id.grid_logging);
         mGridScene = findViewById(R.id.grid_scene);
         project_name = findViewById(R.id.project_name);
         wellName = findViewById(R.id.wellName);
-        horizon = findViewById(R.id.horizon);
-        top_boundary_depth = findViewById(R.id.top_boundary_depth);
-        bottom_boundary_depth = findViewById(R.id.bottom_boundary_depth);
-        thickness = findViewById(R.id.thickness);
-        interpretation_conclusion = findViewById(R.id.interpretation_conclusion);
         recorder = findViewById(R.id.recorder);
         remark = findViewById(R.id.remark);
         tv_save = findViewById(R.id.tv_save);
         tv_remove = findViewById(R.id.tv_remove);
+
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FieldConstructionLoggingActivity.this.finish();
+                SiteConstructionInputSiteDailyActivity.this.finish();
             }
         });
         tv_save.setOnClickListener(new View.OnClickListener() {
@@ -122,7 +107,7 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
 
                 Map<String, Object> map = new HashMap<>();
                 map.put("projectId", BaseApplication.currentProject.getId());
-                map.put("taskType", "测井施工");
+                map.put("taskType", "录井施工-现场日报");
                 map.put("wellName", wellName.getText().toString());
                 map.put("recorder", recorder.getText().toString());
                 map.put("recordDate", mEditTime.getText().toString());
@@ -130,14 +115,6 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
                 if (!TextUtils.isEmpty(id)) {
                     map.put("id", id);
                 }
-                FieldConstructionLoggingBean extendData = new FieldConstructionLoggingBean();
-                extendData.setHorizon(horizon.getText().toString());
-                extendData.setThickness(thickness.getText().toString());
-                extendData.setBottom_boundary_depth(bottom_boundary_depth.getText().toString());
-                extendData.setInterpretation_conclusion(interpretation_conclusion.getText().toString());
-                extendData.setTop_boundary_depth(top_boundary_depth.getText().toString());
-
-                map.put("extendData", new Gson().toJson(extendData));
                 DataAcquisitionUtil.getInstance().submit(map, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                     @Override
                     public void onsuccess(ResponseDataItem<PlanBean> responseDataItem) {
@@ -148,16 +125,16 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
                             if (deleteImageList != null && deleteImageList.size() > 0) {
                                 EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
                             }
-                            FieldConstructionLoggingActivity.this.finish();
+                            SiteConstructionInputSiteDailyActivity.this.finish();
 
                         } else {
-                            Toast.makeText(FieldConstructionLoggingActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void fail(String code, String message) {
-                        Toast.makeText(FieldConstructionLoggingActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "提交失败，请重新提交", Toast.LENGTH_SHORT).show();
 
                     }
                 });
@@ -185,37 +162,37 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             public void onAddClick(View view) {
                 //点击添加
                 if (mMorningMeetingImageBeans.size() == 7) {
-                    Toast.makeText(FieldConstructionLoggingActivity.this, "照片不能超过6张", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "照片不能超过6张", Toast.LENGTH_SHORT).show();
                 } else {
                     mChooseImageType = 0;
-                    ChooseImageDialog.getInstance().show(FieldConstructionLoggingActivity.this);
+                    ChooseImageDialog.getInstance().show(SiteConstructionInputSiteDailyActivity.this);
                 }
 
             }
         });
 
         //整改情况说明
-        mSubsectionImageBeans.add(new ImageBean(null, null, 1));
-        mSubsectionImageAdapter = new ImageAdapter(mSubsectionImageBeans, this);
-        mGridSubsection.setAdapter(mSubsectionImageAdapter);
-        mSubsectionImageAdapter.setOnImageClickListtener(new ImageAdapter.OnImageClickListener() {
+        mLoggingImageBeans.add(new ImageBean(null, null, 1));
+        mLogginfImageAdapter = new ImageAdapter(mLoggingImageBeans, this);
+        mGridLogging.setAdapter(mLogginfImageAdapter);
+        mLogginfImageAdapter.setOnImageClickListtener(new ImageAdapter.OnImageClickListener() {
             @Override
             public void onCancleClick(int position, View view) {
                 //点击取消
-                ImageBean imageBean = mSubsectionImageBeans.get(position);
+                ImageBean imageBean = mLoggingImageBeans.get(position);
                 deleteImageList.add(imageBean.getId());
-                mSubsectionImageBeans.remove(position);
-                mGridSubsection.setAdapter(mSubsectionImageAdapter);
+                mLoggingImageBeans.remove(position);
+                mGridLogging.setAdapter(mLogginfImageAdapter);
             }
 
             @Override
             public void onAddClick(View view) {
                 //点击添加
-                if (mSubsectionImageBeans.size() == 7) {
-                    Toast.makeText(FieldConstructionLoggingActivity.this, "照片不能超过6张", Toast.LENGTH_SHORT).show();
+                if (mLoggingImageBeans.size() == 7) {
+                    Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "照片不能超过6张", Toast.LENGTH_SHORT).show();
                 } else {
                     mChooseImageType = 1;
-                    ChooseImageDialog.getInstance().show(FieldConstructionLoggingActivity.this);
+                    ChooseImageDialog.getInstance().show(SiteConstructionInputSiteDailyActivity.this);
                 }
 
             }
@@ -238,10 +215,10 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             public void onAddClick(View view) {
                 //点击添加
                 if (mSceneImageBeans.size() == 7) {
-                    Toast.makeText(FieldConstructionLoggingActivity.this, "照片不能超过6张", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "照片不能超过6张", Toast.LENGTH_SHORT).show();
                 } else {
                     mChooseImageType = 2;
-                    ChooseImageDialog.getInstance().show(FieldConstructionLoggingActivity.this);
+                    ChooseImageDialog.getInstance().show(SiteConstructionInputSiteDailyActivity.this);
                 }
 
             }
@@ -265,16 +242,16 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
                         @Override
                         public void onsuccess(ResponseDataItem o) {
                             if (o.isSuccess()) {
-                                FieldConstructionLoggingActivity.this.finish();
+                                SiteConstructionInputSiteDailyActivity.this.finish();
                             } else {
-                                Toast.makeText(FieldConstructionLoggingActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
                             }
 
                         }
 
                         @Override
                         public void fail(String code, String message) {
-                            Toast.makeText(FieldConstructionLoggingActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -297,14 +274,6 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
                                 Log.e(TAG, "");
                             }
                             mEditTime.setText(time);
-                            FieldConstructionLoggingBean bean = new Gson().fromJson(mPlanBean.getExtendData(), FieldConstructionLoggingBean.class);
-                            if (bean != null) {
-                                horizon.setText(bean.getHorizon());
-                                bottom_boundary_depth.setText(bean.getBottom_boundary_depth());
-                                thickness.setText(bean.getThickness());
-                                interpretation_conclusion.setText(bean.getInterpretation_conclusion());
-                                top_boundary_depth.setText(bean.getTop_boundary_depth());
-                            }
                             if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
                                 for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
                                     ImageBean imageBean = new ImageBean(null, null, 0);
@@ -314,16 +283,16 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
                                 }
                                 mMorningMeetingImageAdapter.notifyDataSetChanged();
                             }
-                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos2()) && mPlanBean.getFiles2() != null) {
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles2() != null) {
                                 for (PlanBean.PhotoFile photo : mPlanBean.getFiles2()) {
                                     ImageBean imageBean = new ImageBean(null, null, 0);
                                     imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
                                     imageBean.setId(photo.getId());
-                                    mSubsectionImageBeans.add(mSubsectionImageBeans.size() - 1, imageBean);
+                                    mLoggingImageBeans.add(mLoggingImageBeans.size() - 1, imageBean);
                                 }
-                                mSubsectionImageAdapter.notifyDataSetChanged();
+                                mLogginfImageAdapter.notifyDataSetChanged();
                             }
-                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos3()) && mPlanBean.getFiles3() != null) {
+                            if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles3() != null) {
                                 for (PlanBean.PhotoFile photo : mPlanBean.getFiles3()) {
                                     ImageBean imageBean = new ImageBean(null, null, 0);
                                     imageBean.setImageUrl(EncapsulationImageUrl.encapsulation(photo.getId()));
@@ -345,6 +314,7 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
         } else {
             tv_remove.setVisibility(View.GONE);
         }
+
     }
 
     /**
@@ -365,21 +335,21 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             if (planBean != null) {
                 photoFiles = planBean.getFiles();
             }
-            EncapsulationImageUrl.updatePhotos(taskid, "测井施工", "p1", mMorningMeetingImageBeans, photoFiles);
+            EncapsulationImageUrl.updatePhotos(taskid, "录井施工", "p1", mMorningMeetingImageBeans, photoFiles);
         }
-        if (mSubsectionImageBeans != null && mSubsectionImageBeans.size() > 0) {
+        if (mLoggingImageBeans != null && mLoggingImageBeans.size() > 0) {
             List<PlanBean.PhotoFile> photoFiles2 = new ArrayList<>();
             if (planBean != null) {
                 photoFiles2 = planBean.getFiles2();
             }
-            EncapsulationImageUrl.updatePhotos(taskid, "测井施工", "p2", mSubsectionImageBeans, photoFiles2);
+            EncapsulationImageUrl.updatePhotos(taskid, "录井施工", "p2", mLoggingImageBeans, photoFiles2);
         }
         if (mSceneImageBeans != null && mSceneImageBeans.size() > 0) {
             List<PlanBean.PhotoFile> photoFiles3 = new ArrayList<>();
             if (planBean != null) {
                 photoFiles3 = planBean.getFiles3();
             }
-            EncapsulationImageUrl.updatePhotos(taskid, "测井施工", "p3", mSceneImageBeans, photoFiles3);
+            EncapsulationImageUrl.updatePhotos(taskid, "录井施工", "p3", mSceneImageBeans, photoFiles3);
         }
 
 
@@ -388,7 +358,6 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         String picturePath = null;
         if (requestCode == 100 && resultCode == RESULT_OK && null != data) {
 
@@ -404,25 +373,23 @@ public class FieldConstructionLoggingActivity extends AppCompatActivity {
             picturePath = cursor.getString(columnIndex);
 
             cursor.close();
+
         } else if (requestCode == 200 && resultCode == RESULT_OK) {
             picturePath = ChooseImageDialog.getInstance().getPhotoFile().getAbsolutePath();
         }
         if (!TextUtils.isEmpty(picturePath)) {
-
-
             if (mChooseImageType == 0) {
                 mMorningMeetingImageBeans.add(mMorningMeetingImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridMorningMeeting.setAdapter(mMorningMeetingImageAdapter);
             } else if (mChooseImageType == 1) {
-                mSubsectionImageBeans.add(mSubsectionImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
-                mGridSubsection.setAdapter(mSubsectionImageAdapter);
+                mLoggingImageBeans.add(mLoggingImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
+                mGridLogging.setAdapter(mLogginfImageAdapter);
             } else if (mChooseImageType == 2) {
                 mSceneImageBeans.add(mSceneImageBeans.size() - 1, new ImageBean(picturePath, BitmapFactory.decodeFile(picturePath), 0));
                 mGridScene.setAdapter(mSceneImageAdapter);
             }
-
-
         }
+
 
     }
 
