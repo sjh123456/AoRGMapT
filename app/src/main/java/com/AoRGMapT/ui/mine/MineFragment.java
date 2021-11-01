@@ -201,7 +201,6 @@ public class MineFragment extends Fragment {
 
         Axis axisX = new Axis();
         Axis axisY = new Axis().setHasLines(true);
-        axisX.setName("类型");
         axisX.setValues(axisValues);
         axisY.setName("数量");
         mColumnChartData.setAxisXBottom(axisX);

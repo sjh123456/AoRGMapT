@@ -116,7 +116,6 @@ public class WellLocationDeterminationActivity extends AppCompatActivity {
         mGridResident = findViewById(R.id.grid_resident);
         project_name = findViewById(R.id.project_name);
         wellName = findViewById(R.id.wellName);
-        ed_altitude = findViewById(R.id.ed_altitude);
         ed_x = findViewById(R.id.ed_x);
         ed_y = findViewById(R.id.ed_y);
         ed_location = findViewById(R.id.ed_location);

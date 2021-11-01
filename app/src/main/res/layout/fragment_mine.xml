@@ -80,18 +80,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="累计采集数据"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/tv_project_name1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
                     android:layout_weight="1"
                     android:text="项目 1"
                     android:textSize="20sp"
@@ -166,13 +159,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="采集数据分析情况"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/tv_project_name2"
@@ -200,7 +186,7 @@
                 <lecho.lib.hellocharts.view.ColumnChartView
                     android:id="@+id/ccv_main"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="180dp"
                     android:layout_gravity="center"
                     android:layout_margin="10dp"
                     android:transitionName="column" />

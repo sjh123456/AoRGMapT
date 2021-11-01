@@ -32,8 +32,11 @@ public class DataAcquisitionUtil {
     // 账号信息
     private final String account = "TEST1";
     private final String name = "地调局TEST1";
-    private final String password = "1234";
+    private final String password = "1234"; 
     private final String authorization = "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==";
+    private final String AUTHORIZATION="Authorization";
+    private final String XACCESSTOKEN="X-Access-Token";
+    private final String BASEURL="http://121.36.58.193/blade-system";
 
     private String TAG = "DataAcquisitionUtil";
 
@@ -59,7 +62,7 @@ public class DataAcquisitionUtil {
 
         Map<String, String> header = new HashMap<>();
         header.put("User-Type", "app");
-        header.put("Authorization", authorization);
+        header.put(AUTHORIZATION, authorization);
 
         Map<String, String> param = new HashMap<>();
         param.put("grantType", "credible");
@@ -67,7 +70,7 @@ public class DataAcquisitionUtil {
         param.put("password", password);
         param.put("userName", name);
         param.put("tenantId", "100000");
-        RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/v1/token", param, header, responseListener, new TypeToken<ResponseDataItem<UserInfo>>() {
+        RequestUtil.getInstance().requestHttp(BASEURL+"/v1/token", param, header, responseListener, new TypeToken<ResponseDataItem<UserInfo>>() {
         }.getType());
 
     }
@@ -84,12 +87,12 @@ public class DataAcquisitionUtil {
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
 
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("pageSize", pageSize + "");
             param.put("current", current + "");
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/page",
+            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldPlanProject/page",
                     param,
                     header,
                     responseListener, new TypeToken<ProjectResponseData>() {
@@ -104,12 +107,12 @@ public class DataAcquisitionUtil {
                             //更新用户信息
                             BaseApplication.userInfo = userInfo;
                             Map<String, String> header = new HashMap<>();
-                            header.put("Authorization", authorization);
-                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+                            header.put(AUTHORIZATION, authorization);
+                            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
                             Map<String, String> param = new HashMap<>();
                             param.put("pageSize", pageSize + "");
                             param.put("current", current + "");
-                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/page",
+                            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldPlanProject/page",
                                     param,
                                     header,
                                     responseListener, new TypeToken<ProjectResponseData>() {
@@ -135,14 +138,14 @@ public class DataAcquisitionUtil {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("projectId", projectId);
             param.put("column", "recordDate");
             param.put("pageSize", pageSize + "");
             param.put("current", current + "");
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailPageByJson",
+            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldInspectTask/detailPageByJson",
                     param, header, responseListener,
                     new TypeToken<PlanResponseData>() {
                     }.getType());
@@ -161,11 +164,11 @@ public class DataAcquisitionUtil {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("id", id);
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/detailByJson",
+            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldInspectTask/detailByJson",
                     param, header, responseListener,
                     new TypeToken<ResponseDataItem<PlanBean>>() {
                     }.getType());
@@ -184,9 +187,9 @@ public class DataAcquisitionUtil {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-            RequestUtil.getInstance().requestRawHttp("http://121.36.58.193/blade-system/fieldInspectTask/submit",
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
+            RequestUtil.getInstance().requestRawHttp(BASEURL+"/fieldInspectTask/submit",
                     new Gson().toJson(param), header, responseListener,
                     new TypeToken<ResponseDataItem<PlanBean>>() {
                     }.getType());
@@ -205,11 +208,11 @@ public class DataAcquisitionUtil {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("ids", ids);
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldInspectTask/remove",
+            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldInspectTask/remove",
                     param, header, responseListener,
                     new TypeToken<ResponseDataItem>() {
                     }.getType());
@@ -235,9 +238,9 @@ public class DataAcquisitionUtil {
         }
         if (files != null && files.size() > 0 && BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
-            RequestUtil.getInstance().requestFileHttp("http://121.36.58.193/blade-system/fieldInspectTask/appendFile",
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
+            RequestUtil.getInstance().requestFileHttp(BASEURL+"/fieldInspectTask/appendFile",
                     param, files, header, responseListener
                     , new TypeToken<ResponseDataItem<UpdateFileResponseData.FileData>>() {
                     }.getType());
@@ -254,12 +257,12 @@ public class DataAcquisitionUtil {
     public void deleteFile(String taskId, String fileIds, RequestUtil.OnResponseListener<ResponseDataItem> responseListener) {
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("taskId", taskId);
             param.put("fileIds", fileIds);
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system//fieldInspectTask/deleteFile",
+            RequestUtil.getInstance().requestHttp(BASEURL+"//fieldInspectTask/deleteFile",
                     param, header, responseListener
                     , new TypeToken<ResponseDataItem>() {
                     }.getType());
@@ -280,12 +283,12 @@ public class DataAcquisitionUtil {
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
 
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("pageSize", pageSize + "");
             param.put("current", current + "");
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/getBoardTasksList",
+            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldPlanProject/getBoardTasksList",
                     param,
                     header,
                     responseListener, new TypeToken<StatisticsProjectResponseData>() {
@@ -300,12 +303,12 @@ public class DataAcquisitionUtil {
                             //更新用户信息
                             BaseApplication.userInfo = userInfo;
                             Map<String, String> header = new HashMap<>();
-                            header.put("Authorization", authorization);
-                            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+                            header.put(AUTHORIZATION, authorization);
+                            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
                             Map<String, String> param = new HashMap<>();
                             param.put("pageSize", pageSize + "");
                             param.put("current", current + "");
-                            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/getBoardTasksList",
+                            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldPlanProject/getBoardTasksList",
                                     param,
                                     header,
                                     responseListener, new TypeToken<StatisticsProjectResponseData>() {
@@ -332,11 +335,11 @@ public class DataAcquisitionUtil {
 
         if (BaseApplication.userInfo != null && !TextUtils.isEmpty(BaseApplication.userInfo.getAccessToken())) {
             Map<String, String> header = new HashMap<>();
-            header.put("Authorization", authorization);
-            header.put("X-Access-Token", BaseApplication.userInfo.getAccessToken());
+            header.put(AUTHORIZATION, authorization);
+            header.put(XACCESSTOKEN, BaseApplication.userInfo.getAccessToken());
             Map<String, String> param = new HashMap<>();
             param.put("projectId", projectId);
-            RequestUtil.getInstance().requestHttp("http://121.36.58.193/blade-system/fieldPlanProject/getTasksList",
+            RequestUtil.getInstance().requestHttp(BASEURL+"/fieldPlanProject/getTasksList",
                     param, header, responseListener,
                     new TypeToken<TaskListResponseData>() {
                     }.getType());
