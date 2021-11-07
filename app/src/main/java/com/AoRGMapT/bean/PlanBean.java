@@ -11,6 +11,9 @@ public class PlanBean {
         this.complete = complete;
     }
 
+    public PlanBean() {
+    }
+
     public boolean isComplete() {
         return complete;
     }
@@ -47,6 +50,15 @@ public class PlanBean {
     private List<PhotoFile> files4;
     private List<PhotoFile> files5;
     private List<PhotoFile> files6;
+    private int key;
+
+    public int getKey() {
+        return key;
+    }
+
+    public void setKey(int key) {
+        this.key = key;
+    }
 
     public List<PhotoFile> getFiles() {
         return files;

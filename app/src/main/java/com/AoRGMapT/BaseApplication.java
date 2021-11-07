@@ -11,6 +11,7 @@ import com.amap.api.location.AMapLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BaseApplication extends Application {
 
@@ -23,6 +24,8 @@ public class BaseApplication extends Application {
     public static List<ProjectBean> projectBeanDetailList=new ArrayList<>();
     //当前的设备列表
     public static ProjectBean currentProject;
+    //获取本地项目的设备列表数量信息
+    public static List<Map<String,Integer>> planSizeList=new ArrayList<>();
 
 
     @Override

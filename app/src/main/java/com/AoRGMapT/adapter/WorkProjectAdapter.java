@@ -27,10 +27,13 @@ import com.AoRGMapT.SiteConstructionInputSiteDailyActivity;
 import com.AoRGMapT.SiteConstructionWellDrillingActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
+import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.WorkItemBean;
 import com.AoRGMapT.util.ChooseModeDialog;
+import com.AoRGMapT.util.LocalDataUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.ViewHolder> {
 

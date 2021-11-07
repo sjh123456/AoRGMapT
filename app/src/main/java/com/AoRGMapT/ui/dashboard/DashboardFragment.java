@@ -44,7 +44,7 @@ public class DashboardFragment extends Fragment {
     private FragmentDashboardBinding binding;
     private PlanAdapter planAdapter;
     private List<PlanBean> planBeans = new ArrayList<>();
-    private int pageSize = 5;
+    private int pageSize = 20;
     private int current = 1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,

@@ -28,11 +28,13 @@ import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
 import com.AoRGMapT.util.EncapsulationImageUrl;
+import com.AoRGMapT.util.LocalDataUtil;
 import com.AoRGMapT.util.RequestUtil;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -77,6 +79,8 @@ public class FracturingTestActivity extends AppCompatActivity {
 
     //当前项目的id
     private String id;
+    //本地的key
+    private int key = -1;
 
     private TextView project_name;
     private EditText wellName;
@@ -98,12 +102,14 @@ public class FracturingTestActivity extends AppCompatActivity {
     private EditText remark;
     private TextView tv_save;
     private TextView tv_remove;
+    private TextView tv_local_save;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fracturing_test);
         id = getIntent().getStringExtra("id");
+        key = getIntent().getIntExtra("key", -1);
 
         mEditTime = findViewById(R.id.ed_time);
         mGridFracture = findViewById(R.id.grid_fracture);
@@ -130,6 +136,7 @@ public class FracturingTestActivity extends AppCompatActivity {
         remark = findViewById(R.id.remark);
         tv_save = findViewById(R.id.tv_save);
         tv_remove = findViewById(R.id.tv_remove);
+        tv_local_save = findViewById(R.id.tv_local_save);
 
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,7 +147,9 @@ public class FracturingTestActivity extends AppCompatActivity {
         tv_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (BaseApplication.currentProject == null) {
+                    return;
+                }
                 Map<String, Object> map = new HashMap<>();
                 map.put("projectId", BaseApplication.currentProject.getId());
                 map.put("taskType", "压裂试油");
@@ -177,6 +186,10 @@ public class FracturingTestActivity extends AppCompatActivity {
                             addPhotos(responseDataItem.getData().getId(), mPlanBean);
                             if (deleteImageList != null && deleteImageList.size() > 0) {
                                 EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
+                            }
+                            //上传成功之后，删除本地项目
+                            if (key != -1) {
+                                LocalDataUtil.getIntance(FracturingTestActivity.this).deletePlanInfo(key);
                             }
                             FracturingTestActivity.this.finish();
 
@@ -284,66 +297,162 @@ public class FracturingTestActivity extends AppCompatActivity {
             recorder.setText(BaseApplication.userInfo.getUserName());
         }
 
-        if (!TextUtils.isEmpty(id)) {
+        if (!TextUtils.isEmpty(id) || key != -1) {
 
             tv_remove.setVisibility(View.VISIBLE);
             tv_remove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (key != -1) {
+                        LocalDataUtil.getIntance(FracturingTestActivity.this).deletePlanInfo(key);
+                        FracturingTestActivity.this.finish();
+                    } else {
+                        DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                            @Override
+                            public void onsuccess(ResponseDataItem o) {
+                                if (o.isSuccess()) {
+                                    FracturingTestActivity.this.finish();
+                                } else {
+                                    Toast.makeText(FracturingTestActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                                }
 
-                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
-                        @Override
-                        public void onsuccess(ResponseDataItem o) {
-                            if (o.isSuccess()) {
-                                FracturingTestActivity.this.finish();
-                            } else {
-                                Toast.makeText(FracturingTestActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
                             }
 
-                        }
-
-                        @Override
-                        public void fail(String code, String message) {
-                            Toast.makeText(FracturingTestActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void fail(String code, String message) {
+                                Toast.makeText(FracturingTestActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
             });
+            //判断显示本地还是云端
+            if (key != -1) {
+                getLocalInfo();
+            } else {
+                tv_local_save.setVisibility(View.GONE);
+                getOnlineInfo();
+            }
 
+
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
+        tv_local_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveLocal();
+                FracturingTestActivity.this.finish();
+            }
+        });
+    }
+
+    //获取展示本地信息
+
+    private void getLocalInfo() {
+        if (key != -1) {
+            PlanBean planBean = LocalDataUtil.getIntance(this).queryLocalPlanInfoFromKey(key);
+            mPlanBean = planBean;
+            showPlanInfo();
+            if (!TextUtils.isEmpty(planBean.getSitePhotos())) {
+                List<ImageBean> imageBeans = new Gson().fromJson(mPlanBean.getSitePhotos(), new TypeToken<List<ImageBean>>() {
+                }.getType());
+                mFractureImageBeans.clear();
+                mFractureImageBeans.addAll(imageBeans);
+                for (ImageBean image : mFractureImageBeans) {
+                    image.setBitmap(BitmapFactory.decodeFile(image.getImagePath()));
+                }
+                mFractureImageAdapter.notifyDataSetChanged();
+            }
+            if (!TextUtils.isEmpty(planBean.getSitePhotos2())) {
+                List<ImageBean> imageBeans = new Gson().fromJson(mPlanBean.getSitePhotos2(), new TypeToken<List<ImageBean>>() {
+                }.getType());
+                mOilTestImageBeans.clear();
+                mOilTestImageBeans.addAll(imageBeans);
+                for (ImageBean image : mOilTestImageBeans) {
+                    image.setBitmap(BitmapFactory.decodeFile(image.getImagePath()));
+                }
+                mOilTestImageAdapter.notifyDataSetChanged();
+            }
+            if (!TextUtils.isEmpty(planBean.getSitePhotos3())) {
+                List<ImageBean> imageBeans = new Gson().fromJson(mPlanBean.getSitePhotos3(), new TypeToken<List<ImageBean>>() {
+                }.getType());
+                mSceneImageBeans.clear();
+                mSceneImageBeans.addAll(imageBeans);
+                for (ImageBean image : mSceneImageBeans) {
+                    image.setBitmap(BitmapFactory.decodeFile(image.getImagePath()));
+                }
+                mSceneImageAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    //将信息保存在本地
+    private void saveLocal() {
+        if (BaseApplication.currentProject == null) {
+            return;
+        }
+        PlanBean planBean = new PlanBean();
+        planBean.setProjectId(BaseApplication.currentProject.getId());
+        planBean.setTaskType("压裂试油");
+        planBean.setWellName(wellName.getText().toString());
+        planBean.setRecorder(recorder.getText().toString());
+        planBean.setRecordDate(mEditTime.getText().toString());
+        planBean.setCreateTime(mEditTime.getText().toString());
+        planBean.setRemark(remark.getText().toString());
+        FracturingTestBean extendData = new FracturingTestBean();
+        extendData.setHorizon(horizon.getText().toString());
+        extendData.setCumulative_oil_production(cumulative_oil_production.getText().toString());
+        extendData.setCumulative_gas_production(cumulative_gas_production.getText().toString());
+        extendData.setFracturing_time(fracturing_time.getText().toString());
+        extendData.setCumulative_water_production(cumulative_water_production.getText().toString());
+        extendData.setDaily_gas_production(daily_gas_production.getText().toString());
+        extendData.setFracturing_fluid_consumption(fracturing_fluid_consumption.getText().toString());
+        extendData.setDaily_oil_production(daily_oil_production.getText().toString());
+        extendData.setPerforation_depth(perforation_depth.getText().toString());
+        extendData.setDaily_water_yield(daily_water_yield.getText().toString());
+        extendData.setRupture_name(rupture_name.getText().toString());
+        extendData.setSand_addition(sand_addition.getText().toString());
+        extendData.setPerforation_thickness(perforation_thickness.getText().toString());
+        extendData.setRupture_pressure(rupture_pressure.getText().toString());
+        planBean.setExtendData(new Gson().toJson(extendData));
+        if (mFractureImageBeans != null) {
+            for (ImageBean image : mFractureImageBeans) {
+                image.setBitmap(null);
+            }
+            planBean.setSitePhotos(new Gson().toJson(mFractureImageBeans));
+        }
+        if (mOilTestImageBeans != null) {
+            for (ImageBean image : mOilTestImageBeans) {
+                image.setBitmap(null);
+            }
+            planBean.setSitePhotos2(new Gson().toJson(mOilTestImageBeans));
+        }
+        if (mSceneImageBeans != null) {
+            for (ImageBean image : mSceneImageBeans) {
+                image.setBitmap(null);
+            }
+            planBean.setSitePhotos3(new Gson().toJson(mSceneImageBeans));
+        }
+        if (key != -1) {
+            planBean.setKey(key);
+            LocalDataUtil.getIntance(this).updatePlanInfo(planBean);
+
+        } else {
+            LocalDataUtil.getIntance(this).addLocalPlanInfo(planBean);
+        }
+    }
+
+    //获取线上信息
+    private void getOnlineInfo() {
+        if (!TextUtils.isEmpty(id)) {
             DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
                         mPlanBean = planBeanResponseDataItem.getData();
                         if (mPlanBean != null) {
-                            wellName.setText(mPlanBean.getWellName());
-                            recorder.setText(mPlanBean.getRecorder());
-                            remark.setText(mPlanBean.getRemark());
-                            String time = mPlanBean.getCreateTime();
-                            try {
-                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
-                                time = simpleDateFormat.format(date);
-                            } catch (Exception ex) {
-                                Log.e(TAG, "");
-                            }
-                            mEditTime.setText(time);
-                            FracturingTestBean fracturingTestBean = new Gson().fromJson(mPlanBean.getExtendData(), FracturingTestBean.class);
-                            if (fracturingTestBean != null) {
-                                fracturing_time.setText(fracturingTestBean.getFracturing_time());
-                                cumulative_oil_production.setText(fracturingTestBean.getCumulative_oil_production());
-                                cumulative_gas_production.setText(fracturingTestBean.getCumulative_gas_production());
-                                fracturing_fluid_consumption.setText(fracturingTestBean.getFracturing_fluid_consumption());
-                                cumulative_water_production.setText(fracturingTestBean.getCumulative_water_production());
-                                horizon.setText(fracturingTestBean.getHorizon());
-                                daily_gas_production.setText(fracturingTestBean.getDaily_gas_production());
-                                daily_oil_production.setText(fracturingTestBean.getDaily_oil_production());
-                                daily_water_yield.setText(fracturingTestBean.getDaily_water_yield());
-                                rupture_name.setText(fracturingTestBean.getRupture_name());
-                                perforation_depth.setText(fracturingTestBean.getPerforation_depth());
-                                rupture_pressure.setText(fracturingTestBean.getRupture_pressure());
-                                sand_addition.setText(fracturingTestBean.getSand_addition());
-                                perforation_thickness.setText(fracturingTestBean.getPerforation_thickness());
-                            }
+                            showPlanInfo();
 
                             if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
                                 for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
@@ -382,17 +491,50 @@ public class FracturingTestActivity extends AppCompatActivity {
                     Log.e(TAG, "项目详情请求失败");
                 }
             });
-        } else {
-            tv_remove.setVisibility(View.GONE);
         }
+    }
 
+    /**
+     * 显示项目信息
+     */
+    private void showPlanInfo() {
+        if (mPlanBean != null) {
+            wellName.setText(mPlanBean.getWellName());
+            recorder.setText(mPlanBean.getRecorder());
+            remark.setText(mPlanBean.getRemark());
+            String time = mPlanBean.getCreateTime();
+            try {
+                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                time = simpleDateFormat.format(date);
+            } catch (Exception ex) {
+                Log.e(TAG, "");
+            }
+            mEditTime.setText(time);
+            FracturingTestBean fracturingTestBean = new Gson().fromJson(mPlanBean.getExtendData(), FracturingTestBean.class);
+            if (fracturingTestBean != null) {
+                fracturing_time.setText(fracturingTestBean.getFracturing_time());
+                cumulative_oil_production.setText(fracturingTestBean.getCumulative_oil_production());
+                cumulative_gas_production.setText(fracturingTestBean.getCumulative_gas_production());
+                fracturing_fluid_consumption.setText(fracturingTestBean.getFracturing_fluid_consumption());
+                cumulative_water_production.setText(fracturingTestBean.getCumulative_water_production());
+                horizon.setText(fracturingTestBean.getHorizon());
+                daily_gas_production.setText(fracturingTestBean.getDaily_gas_production());
+                daily_oil_production.setText(fracturingTestBean.getDaily_oil_production());
+                daily_water_yield.setText(fracturingTestBean.getDaily_water_yield());
+                rupture_name.setText(fracturingTestBean.getRupture_name());
+                perforation_depth.setText(fracturingTestBean.getPerforation_depth());
+                rupture_pressure.setText(fracturingTestBean.getRupture_pressure());
+                sand_addition.setText(fracturingTestBean.getSand_addition());
+                perforation_thickness.setText(fracturingTestBean.getPerforation_thickness());
+            }
+        }
     }
 
     /**
      * 设置当前时间
      */
     private void setCurrentTime() {
-       // SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
+        // SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
 //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         mEditTime.setText(simpleDateFormat.format(date));

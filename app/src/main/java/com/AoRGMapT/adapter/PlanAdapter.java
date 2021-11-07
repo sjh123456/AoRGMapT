@@ -33,16 +33,21 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
-    private final static String TAG="PlanAdapter";
+    private final static String TAG = "PlanAdapter";
 
     private List<PlanBean> itemList;
     private Context context;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private boolean isLocal = false;
 
 
     public PlanAdapter(List<PlanBean> itemList, Context context) {
         this.itemList = itemList;
         this.context = context;
+    }
+
+    public void setLocal(boolean isLocal) {
+        this.isLocal = isLocal;
     }
 
     @NonNull
@@ -68,21 +73,20 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
         holder.tvPlanClass.setText(item.getTaskType());
 
 
-
-        String recordertime=item.getRecordDate();
-        try{
-            recordertime=simpleDateFormat.format(simpleDateFormat.parse(recordertime));
-        }catch (Exception ex){
-            Log.e(TAG,ex.getMessage());
+        String recordertime = item.getRecordDate();
+        try {
+            recordertime = simpleDateFormat.format(simpleDateFormat.parse(recordertime));
+        } catch (Exception ex) {
+            Log.e(TAG, ex.getMessage());
         }
         holder.tvComTime.setText(recordertime);
         holder.tvPlanPeople.setText(item.getRecorder());
-       //holder.tvUpdatePeople.setText(item.getUpdateUser());
-        String updateTime=item.getUpdateTime();
-        try{
-            updateTime=simpleDateFormat.format(simpleDateFormat.parse(updateTime));
-        }catch (Exception ex){
-            Log.e(TAG,ex.getMessage());
+        //holder.tvUpdatePeople.setText(item.getUpdateUser());
+        String updateTime = item.getUpdateTime();
+        try {
+            updateTime = simpleDateFormat.format(simpleDateFormat.parse(updateTime));
+        } catch (Exception ex) {
+            Log.e(TAG, ex.getMessage());
         }
         holder.tvUpdateTime.setText(updateTime);
         holder.item.setOnClickListener(new View.OnClickListener() {
@@ -100,7 +104,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                     intent = new Intent(PlanAdapter.this.context, SiteConstructionWellDrillingActivity.class);
                 } else if ("测井施工-解释结论".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, FieldConstructionLoggingExplainActivity.class);
-                }else if ("测井施工-现场日报".equals(item.getTaskType())) {
+                } else if ("测井施工-现场日报".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, FieldConstructionLoggingSiteDailyActivity.class);
                 } else if ("岩心描述".equals(item.getTaskType())) {
                     intent = new Intent(PlanAdapter.this.context, CoreDescriptionActivity.class);
@@ -122,11 +126,15 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                 } else if ("录井施工-现场日报".equals(item.getTaskType())) {
                     //录井施工
                     intent = new Intent(PlanAdapter.this.context, SiteConstructionInputSiteDailyActivity.class);
-                }else {
+                } else {
                     //成果验收
                     intent = new Intent(PlanAdapter.this.context, AchievementAcceptanceActivity.class);
                 }
-                intent.putExtra("id", item.getId());
+                if (isLocal) {
+                    intent.putExtra("key", item.getKey());
+                } else {
+                    intent.putExtra("id", item.getId());
+                }
                 context.startActivity(intent);
             }
         });
@@ -164,7 +172,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
             tvDelete = view.findViewById(R.id.tv_delete);
             llOperation = view.findViewById(R.id.ll_operation);
             tvUpdateTime = view.findViewById(R.id.tv_update_time);
-          //  tvUpdatePeople = view.findViewById(R.id.tv_update_people);
+            //  tvUpdatePeople = view.findViewById(R.id.tv_update_people);
 
         }
 

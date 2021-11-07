@@ -7,6 +7,7 @@
         <entry key="../../Library/Android/sdk/platforms/android-31/data/res/drawable/edit_text.xml" value="0.34270833333333334" />
         <entry key="app/src/main/res/drawable/bluebox.xml" value="0.3374358974358974" />
         <entry key="app/src/main/res/drawable/btn_1296db_background.xml" value="0.321025641025641" />
+        <entry key="app/src/main/res/drawable/btn_8fbc8f_background.xml" value="0.31574074074074077" />
         <entry key="app/src/main/res/drawable/btn_A52A2A_background.xml" value="0.321025641025641" />
         <entry key="app/src/main/res/drawable/complete_background.xml" value="0.3374358974358974" />
         <entry key="app/src/main/res/drawable/done_selector.xml" value="0.31574074074074077" />
@@ -32,18 +33,23 @@
         <entry key="app/src/main/res/layout/activity_edit_data.xml" value="0.3277212737534073" />
         <entry key="app/src/main/res/layout/activity_field_acceptance.xml" value="0.3265625" />
         <entry key="app/src/main/res/layout/activity_field_construction_logging.xml" value="0.3265625" />
-        <entry key="app/src/main/res/layout/activity_fracturing_test.xml" value="0.474481658692185" />
+        <entry key="app/src/main/res/layout/activity_field_construction_logging_explain.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/activity_field_construction_logging_site_daily.xml" value="0.5" />
+        <entry key="app/src/main/res/layout/activity_fracturing_test.xml" value="0.46303501945525294" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.16590678824721378" />
         <entry key="app/src/main/res/layout/activity_pie_chart.xml" value="0.28125" />
         <entry key="app/src/main/res/layout/activity_quality_testing.xml" value="0.3265625" />
         <entry key="app/src/main/res/layout/activity_reclamation.xml" value="0.3265625" />
         <entry key="app/src/main/res/layout/activity_site_construction.xml" value="0.5" />
         <entry key="app/src/main/res/layout/activity_site_construction_input.xml" value="0.3265625" />
+        <entry key="app/src/main/res/layout/activity_site_construction_input_collection_content.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/activity_site_construction_input_site_daily.xml" value="0.5" />
         <entry key="app/src/main/res/layout/activity_waste_disposal.xml" value="0.5" />
         <entry key="app/src/main/res/layout/activity_well_site_preparation.xml" value="0.43148148148148147" />
         <entry key="app/src/main/res/layout/dialog_bottom_image.xml" value="0.15881458966565348" />
         <entry key="app/src/main/res/layout/dialog_choose_home.xml" value="0.5" />
         <entry key="app/src/main/res/layout/dialog_choose_home_item.xml" value="0.5" />
+        <entry key="app/src/main/res/layout/dialog_choose_mode.xml" value="0.15070921985815602" />
         <entry key="app/src/main/res/layout/fragment_dashboard.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.335" />
         <entry key="app/src/main/res/layout/fragment_mine.xml" value="0.5" />

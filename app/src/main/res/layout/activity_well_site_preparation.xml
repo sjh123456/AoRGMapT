@@ -406,6 +406,20 @@
                 android:scrollbars="vertical" />
 
             <TextView
+                android:id="@+id/tv_local_save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/btn_8fbc8f_background"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="本地保存"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <TextView
                 android:id="@+id/tv_save"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -415,7 +429,7 @@
                 android:background="@drawable/btn_1296db_background"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="保存"
+                android:text="上传"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 

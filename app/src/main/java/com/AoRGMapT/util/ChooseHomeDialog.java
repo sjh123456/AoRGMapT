@@ -16,6 +16,7 @@ import android.widget.ListView;
 import com.AoRGMapT.BaseApplication;
 import com.AoRGMapT.R;
 import com.AoRGMapT.adapter.ChooseProjectAdapter;
+import com.AoRGMapT.bean.ProjectBean;
 
 import java.util.List;
 
@@ -23,6 +24,8 @@ public class ChooseHomeDialog {
     private Dialog mDialog;
 
     private static ChooseHomeDialog chooseImageDialog;
+
+    private ProjectBean mProjectBean;
 
     public static ChooseHomeDialog getInstance() {
         synchronized (ChooseHomeDialog.class) {
@@ -33,6 +36,10 @@ public class ChooseHomeDialog {
         return chooseImageDialog;
     }
 
+    public ChooseHomeDialog setProjectBean(ProjectBean projectBean) {
+        mProjectBean = projectBean;
+        return this;
+    }
 
     public void showDialog(Activity context, boolean isCurrent, View.OnClickListener onClickListener) {
         mDialog = new Dialog(context, R.style.ActionSheetDialogStyle);
@@ -44,7 +51,14 @@ public class ChooseHomeDialog {
 
         ChooseProjectAdapter adapter = new ChooseProjectAdapter(context);
         ListView listView = view.findViewById(R.id.ls_project);
+        if (isCurrent) {
+            adapter.setProjectBean(BaseApplication.currentProject);
+        } else {
+            adapter.setProjectBean(mProjectBean);
+        }
+
         listView.setAdapter(adapter);
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

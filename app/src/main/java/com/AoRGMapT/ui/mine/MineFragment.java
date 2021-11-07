@@ -20,10 +20,12 @@ import com.AoRGMapT.databinding.FragmentMineBinding;
 import com.AoRGMapT.ui.home.HomeFragment;
 import com.AoRGMapT.util.ChooseHomeDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.LocalDataUtil;
 import com.AoRGMapT.util.RequestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
@@ -39,9 +41,9 @@ public class MineFragment extends Fragment {
     private final String TAG = "MineFragment";
 
     //当前项目1
-    private ProjectBean bean1;
+    private ProjectBean bean1 = new ProjectBean();
     // 当前项目2
-    private ProjectBean bean2;
+    private ProjectBean bean2 = new ProjectBean();
 
     private MineViewModel mineViewModel;
     private FragmentMineBinding binding;
@@ -59,7 +61,7 @@ public class MineFragment extends Fragment {
         binding.ivSwitch1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChooseHomeDialog.getInstance().showDialog(MineFragment.this.getActivity(), false, new View.OnClickListener() {
+                ChooseHomeDialog.getInstance().setProjectBean(bean1).showDialog(MineFragment.this.getActivity(), false, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //刷新项目信息
@@ -77,7 +79,7 @@ public class MineFragment extends Fragment {
         binding.ivSwitch2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChooseHomeDialog.getInstance().showDialog(MineFragment.this.getActivity(), false, new View.OnClickListener() {
+                ChooseHomeDialog.getInstance().setProjectBean(bean2).showDialog(MineFragment.this.getActivity(), false, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //刷新项目信息
@@ -126,7 +128,7 @@ public class MineFragment extends Fragment {
     private void setPieData() {
         List<SliceValue> values = new ArrayList<>();
         values.add(new SliceValue(bean1.getTaskCount(), ChartUtils.COLOR_GREEN));
-        values.add(new SliceValue(0, ChartUtils.COLOR_RED));
+        values.add(new SliceValue(bean1.getTaskLocalCount(), ChartUtils.COLOR_RED));
         PieChartData mPieChartData = new PieChartData(values);
         mPieChartData.setHasLabels(false);
         mPieChartData.setHasLabelsOnlyForSelected(true);
@@ -135,7 +137,7 @@ public class MineFragment extends Fragment {
         binding.pcvMain.setPieChartData(mPieChartData);
         binding.tvCollectData.setText("采集数据共 " + bean1.getTaskCount());
         binding.tvSubmitted.setText("已提交数据 " + bean1.getTaskCount());
-        binding.tvNotSubmitted.setText("未提交数据 " + 0);
+        binding.tvNotSubmitted.setText("未提交数据 " + bean1.getTaskLocalCount());
     }
 
     /**
@@ -170,9 +172,12 @@ public class MineFragment extends Fragment {
      * @param data 总列数
      */
     private void setColumnDatasByParams(TaskListResponseData data) {
+
+        Map<String, Integer> map = LocalDataUtil.getIntance(this.getContext()).queryTaskTypeCount(bean2.getProjectId());
+
         List<Column> columns = new ArrayList<>();
         List<SubcolumnValue> values;
-        List<AxisValue> axisValues=new ArrayList<>();
+        List<AxisValue> axisValues = new ArrayList<>();
         //双重for循环给每个子列设置随机的值和随机的颜色
         for (int i = 0; i < data.getData().size(); ++i) {
             values = new ArrayList<>();
@@ -183,7 +188,10 @@ public class MineFragment extends Fragment {
                 if (j == 0) {
                     values.add(new SubcolumnValue(data.getData().get(i).getTaskCount(), ChartUtils.COLOR_GREEN));
                 } else {
-                    values.add(new SubcolumnValue(0, ChartUtils.COLOR_RED));
+
+                    if (map.get(data.getData().get(i).getTaskType()) != null) {
+                        values.add(new SubcolumnValue(map.get(data.getData().get(i).getTaskType()), ChartUtils.COLOR_RED));
+                    }
                 }
             }
 
@@ -192,7 +200,7 @@ public class MineFragment extends Fragment {
             column.setHasLabels(true);                    //没有标签
             column.setHasLabelsOnlyForSelected(true);  //点击只放大
             columns.add(column);
-            axisValues.add(new AxisValue(i,data.getData().get(i).getTaskType().toCharArray()));
+            axisValues.add(new AxisValue(i, data.getData().get(i).getTaskType().toCharArray()));
         }
         ColumnChartData mColumnChartData = new ColumnChartData(columns);               //设置数据
         mColumnChartData.setStacked(true);                          //设置是否堆叠
@@ -202,7 +210,6 @@ public class MineFragment extends Fragment {
         Axis axisX = new Axis();
         Axis axisY = new Axis().setHasLines(true);
         axisX.setValues(axisValues);
-        axisY.setName("数量");
         mColumnChartData.setAxisXBottom(axisX);
         mColumnChartData.setAxisYLeft(axisY);
 

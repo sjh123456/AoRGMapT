@@ -20,12 +20,17 @@ public class ChooseProjectAdapter extends BaseAdapter {
 
     private List<ProjectBean> projectBeanList = new ArrayList<>();
     private Context context;
+    private ProjectBean currentBean;
 
     public ChooseProjectAdapter(Context context) {
         if (BaseApplication.projectBeanList != null) {
             projectBeanList = BaseApplication.projectBeanList;
         }
         this.context = context;
+    }
+
+    public void setProjectBean(ProjectBean projectBean) {
+        this.currentBean = projectBean;
     }
 
 
@@ -51,7 +56,7 @@ public class ChooseProjectAdapter extends BaseAdapter {
         TextView textView = view.findViewById(R.id.tv_name);
         ImageView imageView = view.findViewById(R.id.iv_choose);
         ProjectBean bean = BaseApplication.projectBeanList.get(position);
-        if (TextUtils.equals(bean.getId(), BaseApplication.currentProject.getId())) {
+        if (this.currentBean != null && TextUtils.equals(bean.getId(), this.currentBean.getId())) {
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.INVISIBLE);

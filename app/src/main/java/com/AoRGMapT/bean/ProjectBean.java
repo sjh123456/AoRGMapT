@@ -26,7 +26,15 @@ public class ProjectBean {
     private String recordDate;
     private String projectId;
     private int taskCount;
+    private int taskLocalCount;
 
+    public int getTaskLocalCount() {
+        return taskLocalCount;
+    }
+
+    public void setTaskLocalCount(int taskLocalCount) {
+        this.taskLocalCount = taskLocalCount;
+    }
 
     public String getProjectId() {
         return projectId;
@@ -174,6 +182,7 @@ public class ProjectBean {
         this.imcompletedNum = imcompletedNum;
     }
 
+    public ProjectBean(){}
 
     public int getCompletedNum() {
         return completedNum;

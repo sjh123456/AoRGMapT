@@ -20,10 +20,14 @@ import com.AoRGMapT.adapter.ImageAdapter;
 import com.AoRGMapT.bean.ImageBean;
 import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.ResponseDataItem;
+import com.AoRGMapT.bean.WellLocationDeterminationBean;
 import com.AoRGMapT.util.ChooseImageDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
 import com.AoRGMapT.util.EncapsulationImageUrl;
+import com.AoRGMapT.util.LocalDataUtil;
 import com.AoRGMapT.util.RequestUtil;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,9 +76,12 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
     private EditText remark;
     private TextView tv_save;
     private TextView tv_remove;
+    private TextView tv_local_save;
 
     //当前项目的id
     private String id;
+    //本地的key
+    private int key = -1;
 
 
     @Override
@@ -83,6 +90,7 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_site_construction_input_site_daily);
 
         id = getIntent().getStringExtra("id");
+        key = getIntent().getIntExtra("key", -1);
 
         mEditTime = findViewById(R.id.ed_time);
         mGridMorningMeeting = findViewById(R.id.grid_morning_meeting);
@@ -94,6 +102,7 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
         remark = findViewById(R.id.remark);
         tv_save = findViewById(R.id.tv_save);
         tv_remove = findViewById(R.id.tv_remove);
+        tv_local_save = findViewById(R.id.tv_local_save);
 
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,7 +113,9 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
         tv_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (BaseApplication.currentProject == null) {
+                    return;
+                }
                 Map<String, Object> map = new HashMap<>();
                 map.put("projectId", BaseApplication.currentProject.getId());
                 map.put("taskType", "录井施工-现场日报");
@@ -124,6 +135,10 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
                             addPhotos(responseDataItem.getData().getId(), mPlanBean);
                             if (deleteImageList != null && deleteImageList.size() > 0) {
                                 EncapsulationImageUrl.deletePhotoFile(responseDataItem.getData().getId(), deleteImageList);
+                            }
+                            //上传成功之后，删除本地项目
+                            if (key != -1) {
+                                LocalDataUtil.getIntance(SiteConstructionInputSiteDailyActivity.this).deletePlanInfo(key);
                             }
                             SiteConstructionInputSiteDailyActivity.this.finish();
 
@@ -231,49 +246,105 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
             recorder.setText(BaseApplication.userInfo.getUserName());
         }
 
-        if (!TextUtils.isEmpty(id)) {
+        if (!TextUtils.isEmpty(id)|| key != -1) {
 
             tv_remove.setVisibility(View.VISIBLE);
             tv_remove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (key != -1) {
+                        LocalDataUtil.getIntance(SiteConstructionInputSiteDailyActivity.this).deletePlanInfo(key);
+                        SiteConstructionInputSiteDailyActivity.this.finish();
+                    } else {
+                        DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
+                            @Override
+                            public void onsuccess(ResponseDataItem o) {
+                                if (o.isSuccess()) {
+                                    SiteConstructionInputSiteDailyActivity.this.finish();
+                                } else {
+                                    Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                                }
 
-                    DataAcquisitionUtil.getInstance().remove(id, new RequestUtil.OnResponseListener<ResponseDataItem>() {
-                        @Override
-                        public void onsuccess(ResponseDataItem o) {
-                            if (o.isSuccess()) {
-                                SiteConstructionInputSiteDailyActivity.this.finish();
-                            } else {
-                                Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
                             }
 
-                        }
-
-                        @Override
-                        public void fail(String code, String message) {
-                            Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void fail(String code, String message) {
+                                Toast.makeText(SiteConstructionInputSiteDailyActivity.this, "删除失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }
             });
+//判断显示本地还是云端
+            if (key != -1) {
+                getLocalInfo();
+            } else {
+                tv_local_save.setVisibility(View.GONE);
+                getOnlineInfo();
+            }
 
+        } else {
+            tv_remove.setVisibility(View.GONE);
+        }
+        tv_local_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveLocal();
+                SiteConstructionInputSiteDailyActivity.this.finish();
+            }
+        });
+
+    }
+
+    //获取展示本地信息
+    private void getLocalInfo() {
+        if (key != -1) {
+            PlanBean planBean = LocalDataUtil.getIntance(this).queryLocalPlanInfoFromKey(key);
+            mPlanBean = planBean;
+            showPlanInfo();
+            if (!TextUtils.isEmpty(planBean.getSitePhotos())) {
+                List<ImageBean> imageBeans = new Gson().fromJson(mPlanBean.getSitePhotos(), new TypeToken<List<ImageBean>>() {
+                }.getType());
+                mMorningMeetingImageBeans.clear();
+                mMorningMeetingImageBeans.addAll(imageBeans);
+                for (ImageBean image : mMorningMeetingImageBeans) {
+                    image.setBitmap(BitmapFactory.decodeFile(image.getImagePath()));
+                }
+                mMorningMeetingImageAdapter.notifyDataSetChanged();
+            }
+            if (!TextUtils.isEmpty(planBean.getSitePhotos2())) {
+                List<ImageBean> imageBeans = new Gson().fromJson(mPlanBean.getSitePhotos2(), new TypeToken<List<ImageBean>>() {
+                }.getType());
+                mLoggingImageBeans.clear();
+                mLoggingImageBeans.addAll(imageBeans);
+                for (ImageBean image : mLoggingImageBeans) {
+                    image.setBitmap(BitmapFactory.decodeFile(image.getImagePath()));
+                }
+                mLogginfImageAdapter.notifyDataSetChanged();
+            }
+            if (!TextUtils.isEmpty(planBean.getSitePhotos3())) {
+                List<ImageBean> imageBeans = new Gson().fromJson(mPlanBean.getSitePhotos3(), new TypeToken<List<ImageBean>>() {
+                }.getType());
+                mSceneImageBeans.clear();
+                mSceneImageBeans.addAll(imageBeans);
+                for (ImageBean image : mSceneImageBeans) {
+                    image.setBitmap(BitmapFactory.decodeFile(image.getImagePath()));
+                }
+                mSceneImageAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    //获取线上信息
+    private void getOnlineInfo() {
+        if (!TextUtils.isEmpty(id)) {
             DataAcquisitionUtil.getInstance().detailByJson(id, new RequestUtil.OnResponseListener<ResponseDataItem<PlanBean>>() {
                 @Override
                 public void onsuccess(ResponseDataItem<PlanBean> planBeanResponseDataItem) {
                     if (planBeanResponseDataItem != null) {
                         mPlanBean = planBeanResponseDataItem.getData();
                         if (mPlanBean != null) {
-                            wellName.setText(mPlanBean.getWellName());
-                            recorder.setText(mPlanBean.getRecorder());
-                            remark.setText(mPlanBean.getRemark());
-                            String time = mPlanBean.getCreateTime();
-                            try {
-                                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
-                                time = simpleDateFormat.format(date);
-                            } catch (Exception ex) {
-                                Log.e(TAG, "");
-                            }
-                            mEditTime.setText(time);
+                           showPlanInfo();
                             if (!TextUtils.isEmpty(mPlanBean.getSitePhotos()) && mPlanBean.getFiles() != null) {
                                 for (PlanBean.PhotoFile photo : mPlanBean.getFiles()) {
                                     ImageBean imageBean = new ImageBean(null, null, 0);
@@ -311,11 +382,68 @@ public class SiteConstructionInputSiteDailyActivity extends AppCompatActivity {
                     Log.e(TAG, "项目详情请求失败");
                 }
             });
-        } else {
-            tv_remove.setVisibility(View.GONE);
         }
-
     }
+
+    /**
+     * 显示项目信息
+     */
+    private void showPlanInfo() {
+        if (mPlanBean != null) {
+            wellName.setText(mPlanBean.getWellName());
+            recorder.setText(mPlanBean.getRecorder());
+            remark.setText(mPlanBean.getRemark());
+            String time = mPlanBean.getCreateTime();
+            try {
+                Date date = simpleDateFormat.parse(mPlanBean.getCreateTime());
+                time = simpleDateFormat.format(date);
+            } catch (Exception ex) {
+                Log.e(TAG, "");
+            }
+            mEditTime.setText(time);
+        }
+    }
+
+    //将信息保存在本地
+    private void saveLocal() {
+        if (BaseApplication.currentProject == null) {
+            return;
+        }
+        PlanBean planBean = new PlanBean();
+        planBean.setProjectId(BaseApplication.currentProject.getId());
+        planBean.setTaskType("录井施工-现场日报");
+        planBean.setWellName(wellName.getText().toString());
+        planBean.setRecorder(recorder.getText().toString());
+        planBean.setRecordDate(mEditTime.getText().toString());
+        planBean.setCreateTime(mEditTime.getText().toString());
+        planBean.setRemark(remark.getText().toString());
+        if (mMorningMeetingImageBeans != null) {
+            for (ImageBean image : mMorningMeetingImageBeans) {
+                image.setBitmap(null);
+            }
+            planBean.setSitePhotos(new Gson().toJson(mMorningMeetingImageBeans));
+        }
+        if (mLoggingImageBeans != null) {
+            for (ImageBean image : mLoggingImageBeans) {
+                image.setBitmap(null);
+            }
+            planBean.setSitePhotos2(new Gson().toJson(mLoggingImageBeans));
+        }
+        if (mSceneImageBeans != null) {
+            for (ImageBean image : mSceneImageBeans) {
+                image.setBitmap(null);
+            }
+            planBean.setSitePhotos3(new Gson().toJson(mSceneImageBeans));
+        }
+        if (key != -1) {
+            planBean.setKey(key);
+            LocalDataUtil.getIntance(this).updatePlanInfo(planBean);
+
+        } else {
+            LocalDataUtil.getIntance(this).addLocalPlanInfo(planBean);
+        }
+    }
+
 
     /**
      * 设置当前时间

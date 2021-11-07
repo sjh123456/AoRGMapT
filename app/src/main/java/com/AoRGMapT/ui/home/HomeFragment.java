@@ -29,12 +29,14 @@ import com.AoRGMapT.bean.WorkItemBean;
 import com.AoRGMapT.databinding.FragmentHomeBinding;
 import com.AoRGMapT.util.ChooseHomeDialog;
 import com.AoRGMapT.util.DataAcquisitionUtil;
+import com.AoRGMapT.util.LocalDataUtil;
 import com.AoRGMapT.util.RequestUtil;
 import com.lcodecore.tkrefreshlayout.RefreshListenerAdapter;
 import com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class HomeFragment extends Fragment {
 
@@ -48,7 +50,7 @@ public class HomeFragment extends Fragment {
     private WorkProjectAdapter workProjectAdapter;
 
     //分页
-    private int pageSize = 10;
+    private int pageSize = 20;
     private int current = 1;
 
     private List<ProjectBean> mProjectBeans = new ArrayList<>();
@@ -88,6 +90,7 @@ public class HomeFragment extends Fragment {
                         try {
                             mProjectBeans.clear();
                             mProjectBeans.addAll(projectBeans.getData());
+                            getLocaProjectPlanSize();
                             adapter.notifyDataSetChanged();
                             Toast.makeText(HomeFragment.this.getContext(), "下拉刷新", Toast.LENGTH_SHORT).show();
                             //更新项目列表
@@ -108,6 +111,7 @@ public class HomeFragment extends Fragment {
                                     BaseApplication.projectBeanDetailList.clear();
                                     BaseApplication.projectBeanDetailList.addAll(projectResponseData.getData().getRecords());
                                     setProjectTaskCount();
+
                                 }
                             }
 
@@ -141,6 +145,7 @@ public class HomeFragment extends Fragment {
                     public void onsuccess(StatisticsProjectResponseData projectBeans) {
                         try {
                             mProjectBeans.addAll(projectBeans.getData());
+                            getLocaProjectPlanSize();
                             adapter.notifyDataSetChanged();
                             Toast.makeText(HomeFragment.this.getContext(), "上拉加载", Toast.LENGTH_SHORT).show();
 //                            if (projectBeans.getData().getTotal() == mProjectBeans.size()) {
@@ -161,6 +166,7 @@ public class HomeFragment extends Fragment {
                                         && projectResponseData.getData().getRecords() != null) {
                                     BaseApplication.projectBeanDetailList.addAll(projectResponseData.getData().getRecords());
                                     setProjectTaskCount();
+
                                 }
                             }
 
@@ -194,6 +200,7 @@ public class HomeFragment extends Fragment {
                             //显示当前项目信息
                             binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
                             binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
+                            binding.waitNum.setText(BaseApplication.currentProject.getTaskLocalCount() + "");
                         }
                     }
                 });
@@ -255,6 +262,7 @@ public class HomeFragment extends Fragment {
             public void onsuccess(StatisticsProjectResponseData projectBeans) {
                 try {
                     mProjectBeans.addAll(projectBeans.getData());
+                    getLocaProjectPlanSize();
                     adapter.notifyDataSetChanged();
                     BaseApplication.projectBeanList = mProjectBeans;
                     if (BaseApplication.currentProject == null && mProjectBeans != null && mProjectBeans.size() > 0) {
@@ -262,6 +270,7 @@ public class HomeFragment extends Fragment {
                         binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
                         //显示当前项目信息
                         binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
+                        binding.waitNum.setText(BaseApplication.currentProject.getTaskLocalCount() + "");
                     }
                     DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
                         @Override
@@ -281,6 +290,8 @@ public class HomeFragment extends Fragment {
 
                         }
                     });
+
+
                 } catch (Exception ex) {
                     Log.e(TAG, "数据解析失败");
                 }
@@ -294,6 +305,23 @@ public class HomeFragment extends Fragment {
 
 
     }
+
+    //获取本地项目数量
+    private void getLocaProjectPlanSize() {
+        try {
+            Map<String, Integer> map = LocalDataUtil.getIntance(HomeFragment.this.getContext()).queryPlanInfoCount();
+            if (map != null && map.size() > 0 && mProjectBeans != null) {
+                for (ProjectBean bean : mProjectBeans) {
+                    if (map.get(bean.getProjectId()) != null) {
+                        bean.setTaskLocalCount(map.get(bean.getProjectId()));
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "error:" + ex.getMessage());
+        }
+    }
+
 
     @Override
     public void onResume() {
