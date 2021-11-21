@@ -8,12 +8,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
@@ -24,6 +24,8 @@ import com.hjq.permissions.XXPermissions;
 import java.util.List;
 
 public class LocationUtil {
+
+    private final String TAG="LocationUtil";
 
 
     private static LocationUtil mLocationUtil;
@@ -48,44 +50,50 @@ public class LocationUtil {
     public void startLocation(Context context, AMapLocationListener mLocationListener) {
 
         //初始化定位
-        mLocationClient = new AMapLocationClient(context);
-        //设置定位回调监听
-        mLocationClient.setLocationListener(mLocationListener);
-        //初始化AMapLocationClientOption对象
-        mLocationOption = new AMapLocationClientOption();
-        mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.Transport);
-        //设置定位模式为AMapLocationMode.Hight_Accuracy，高精度模式。
-        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-        //获取一次定位结果：
+        try {
+            mLocationClient = new AMapLocationClient(context);
+
+            //设置定位回调监听
+            mLocationClient.setLocationListener(mLocationListener);
+            //初始化AMapLocationClientOption对象
+            mLocationOption = new AMapLocationClientOption();
+            mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.Transport);
+            //设置定位模式为AMapLocationMode.Hight_Accuracy，高精度模式。
+            mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+            //获取一次定位结果：
 //该方法默认为false。
-        mLocationOption.setOnceLocation(true);
+            mLocationOption.setOnceLocation(true);
 
 //获取最近3s内精度最高的一次定位结果：
 //设置setOnceLocationLatest(boolean b)接口为true，启动定位时SDK会返回最近3s内精度最高的一次定位结果。如果设置其为true，setOnceLocation(boolean b)接口也会被设置为true，反之不会，默认为false。
-        mLocationOption.setOnceLocationLatest(true);
+            mLocationOption.setOnceLocationLatest(true);
 
-        //设置是否返回地址信息（默认返回地址信息）
-        mLocationOption.setNeedAddress(true);
-        //设置是否允许模拟位置,默认为true，允许模拟位置
-        mLocationOption.setMockEnable(true);
-        //给定位客户端对象设置定位参数
-        if (null != mLocationClient) {
-            mLocationClient.setLocationOption(mLocationOption);
-            //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
-            mLocationClient.stopLocation();
-            mLocationClient.startLocation();
+            //设置是否返回地址信息（默认返回地址信息）
+            mLocationOption.setNeedAddress(true);
+            //设置是否允许模拟位置,默认为true，允许模拟位置
+            mLocationOption.setMockEnable(true);
+            //给定位客户端对象设置定位参数
+            if (null != mLocationClient) {
+                mLocationClient.setLocationOption(mLocationOption);
+                //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
+                mLocationClient.stopLocation();
+                mLocationClient.startLocation();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG,e.getMessage());
         }
     }
 
 
-    public void startLocationAndCheckPermission(Context context, AMapLocationListener mLocationListener){
+    public void startLocationAndCheckPermission(Context context, AMapLocationListener mLocationListener) {
         String[] permission = {Permission.ACCESS_COARSE_LOCATION, Permission.ACCESS_FINE_LOCATION};
         if (!XXPermissions.isGranted(context, permission)) {
             XXPermissions.with(context).permission(permission)
                     .request(new OnPermissionCallback() {
                                  @Override
                                  public void onGranted(List<String> permissions, boolean all) {
-                                    startLocation(context,mLocationListener);
+                                     startLocation(context, mLocationListener);
                                  }
 
 
@@ -98,7 +106,7 @@ public class LocationUtil {
                     );
 
         } else {
-            startLocation(context,mLocationListener);
+            startLocation(context, mLocationListener);
         }
     }
 

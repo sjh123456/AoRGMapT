@@ -25,6 +25,7 @@ import com.AoRGMapT.ReclamationActivity;
 import com.AoRGMapT.SiteConstructionInputCollectionContentActivity;
 import com.AoRGMapT.SiteConstructionInputSiteDailyActivity;
 import com.AoRGMapT.SiteConstructionWellDrillingActivity;
+import com.AoRGMapT.WasteDisposalActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
 import com.AoRGMapT.bean.PlanBean;
@@ -126,9 +127,12 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                 } else if ("录井施工-现场日报".equals(item.getTaskType())) {
                     //录井施工
                     intent = new Intent(PlanAdapter.this.context, SiteConstructionInputSiteDailyActivity.class);
-                } else {
+                } else if ("成果验收".equals(item.getTaskType())) {
                     //成果验收
                     intent = new Intent(PlanAdapter.this.context, AchievementAcceptanceActivity.class);
+                } else {
+                    //废弃物处理
+                    intent = new Intent(PlanAdapter.this.context, WasteDisposalActivity.class);
                 }
                 if (isLocal) {
                     intent.putExtra("key", item.getKey());

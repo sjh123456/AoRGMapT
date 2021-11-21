@@ -217,7 +217,7 @@ public class HomeFragment extends Fragment {
 
         //工作列表
         initWorkProjectData();
-        binding.workGrid.setLayoutManager(new GridLayoutManager(HomeFragment.this.getContext(), 4));
+        binding.workGrid.setLayoutManager(new GridLayoutManager(HomeFragment.this.getContext(), 5));
         workProjectAdapter = new WorkProjectAdapter(workItemBeans, this.getContext());
         binding.workGrid.setAdapter(workProjectAdapter);
 
@@ -238,6 +238,7 @@ public class HomeFragment extends Fragment {
         WorkItemBean bean10 = new WorkItemBean("野外验收", R.drawable.field_acceptance);
         WorkItemBean bean11 = new WorkItemBean("成果验收", R.drawable.achievement);
         WorkItemBean bean12 = new WorkItemBean("复耕复垦", R.drawable.reclamation);
+        WorkItemBean bean13 = new WorkItemBean("废物处理", R.drawable.disposal);
 
         workItemBeans.add(bean1);
         workItemBeans.add(bean2);
@@ -251,6 +252,7 @@ public class HomeFragment extends Fragment {
         workItemBeans.add(bean10);
         workItemBeans.add(bean11);
         workItemBeans.add(bean12);
+        workItemBeans.add(bean13);
 
 
     }

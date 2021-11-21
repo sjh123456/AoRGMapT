@@ -25,6 +25,7 @@ import com.AoRGMapT.ReclamationActivity;
 import com.AoRGMapT.SiteConstructionInputCollectionContentActivity;
 import com.AoRGMapT.SiteConstructionInputSiteDailyActivity;
 import com.AoRGMapT.SiteConstructionWellDrillingActivity;
+import com.AoRGMapT.WasteDisposalActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
 import com.AoRGMapT.bean.PlanBean;
@@ -112,8 +113,10 @@ public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.
                     intent = new Intent(WorkProjectAdapter.this.mContext, FieldAcceptanceActivity.class);
                 } else if (position == 10) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, AchievementAcceptanceActivity.class);
-                } else {
+                } else if (position == 11) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, ReclamationActivity.class);
+                } else {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, WasteDisposalActivity.class);
                 }
                 WorkProjectAdapter.this.mContext.startActivity(intent);
             }
