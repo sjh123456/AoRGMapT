@@ -3,6 +3,7 @@ package com.AoRGMapT.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.AoRGMapT.AchievementAcceptanceActivity;
+import com.AoRGMapT.AnalysisAssayActivity;
 import com.AoRGMapT.CommencementAcceptanceActivity;
 import com.AoRGMapT.CoreDescriptionActivity;
 import com.AoRGMapT.FieldAcceptanceActivity;
 import com.AoRGMapT.FieldConstructionLoggingExplainActivity;
 import com.AoRGMapT.FieldConstructionLoggingSiteDailyActivity;
 import com.AoRGMapT.FracturingTestActivity;
+import com.AoRGMapT.GeophysicalGeochemicalExplorationActivity;
+import com.AoRGMapT.LocalDispatchingRouteActivity;
 import com.AoRGMapT.QualityTestingActivity;
 import com.AoRGMapT.R;
 import com.AoRGMapT.ReclamationActivity;
@@ -28,13 +32,10 @@ import com.AoRGMapT.SiteConstructionWellDrillingActivity;
 import com.AoRGMapT.WasteDisposalActivity;
 import com.AoRGMapT.WellLocationDeterminationActivity;
 import com.AoRGMapT.WellSitePreparationActivity;
-import com.AoRGMapT.bean.PlanBean;
 import com.AoRGMapT.bean.WorkItemBean;
 import com.AoRGMapT.util.ChooseModeDialog;
-import com.AoRGMapT.util.LocalDataUtil;
 
 import java.util.List;
-import java.util.Map;
 
 public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.ViewHolder> {
 
@@ -64,15 +65,15 @@ public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.
             @Override
             public void onClick(View view) {
                 Intent intent;
-                if (position == 0) {
+                if (TextUtils.equals("井位确定", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, WellLocationDeterminationActivity.class);
-                } else if (position == 1) {
+                } else if (TextUtils.equals("井场准备", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, WellSitePreparationActivity.class);
-                } else if (position == 2) {
+                } else if (TextUtils.equals("开工验收", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, CommencementAcceptanceActivity.class);
-                } else if (position == 3) {
+                } else if (TextUtils.equals("钻井施工", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, SiteConstructionWellDrillingActivity.class);
-                } else if (position == 4) {
+                } else if (TextUtils.equals("测井施工", item.getName())) {
                     ChooseModeDialog.getIntent().showDialog(mContext, "现场日报", "解释结论", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -87,7 +88,7 @@ public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.
                         }
                     });
                     return;
-                } else if (position == 5) {
+                } else if (TextUtils.equals("录井施工", item.getName())) {
 
                     ChooseModeDialog.getIntent().showDialog(mContext, "现场日报", "采集内容", new View.OnClickListener() {
                         @Override
@@ -103,18 +104,26 @@ public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.
                         }
                     });
                     return;
-                } else if (position == 6) {
+                } else if (TextUtils.equals("岩心描述", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, CoreDescriptionActivity.class);
-                } else if (position == 7) {
+                } else if (TextUtils.equals("压裂试油", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, FracturingTestActivity.class);
-                } else if (position == 8) {
+                } else if (TextUtils.equals("质量检查", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, QualityTestingActivity.class);
-                } else if (position == 9) {
+                } else if (TextUtils.equals("野外验收", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, FieldAcceptanceActivity.class);
-                } else if (position == 10) {
+                } else if (TextUtils.equals("成果验收", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, AchievementAcceptanceActivity.class);
-                } else if (position == 11) {
+                } else if (TextUtils.equals("复耕复垦", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, ReclamationActivity.class);
+                } else if (TextUtils.equals("废物处理", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, WasteDisposalActivity.class);
+                } else if (TextUtils.equals("地调路线", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, LocalDispatchingRouteActivity.class);
+                } else if (TextUtils.equals("物化探", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, GeophysicalGeochemicalExplorationActivity.class);
+                } else if (TextUtils.equals("分析化验", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, AnalysisAssayActivity.class);
                 } else {
                     intent = new Intent(WorkProjectAdapter.this.mContext, WasteDisposalActivity.class);
                 }

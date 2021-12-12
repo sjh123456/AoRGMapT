@@ -2,6 +2,7 @@ package com.AoRGMapT.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +14,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.AoRGMapT.AchievementAcceptanceActivity;
+import com.AoRGMapT.AnalysisAssayActivity;
 import com.AoRGMapT.CommencementAcceptanceActivity;
 import com.AoRGMapT.CoreDescriptionActivity;
 import com.AoRGMapT.FieldAcceptanceActivity;
 import com.AoRGMapT.FieldConstructionLoggingExplainActivity;
 import com.AoRGMapT.FieldConstructionLoggingSiteDailyActivity;
 import com.AoRGMapT.FracturingTestActivity;
+import com.AoRGMapT.GeophysicalGeochemicalExplorationActivity;
+import com.AoRGMapT.LocalDispatchingRouteActivity;
 import com.AoRGMapT.QualityTestingActivity;
 import com.AoRGMapT.R;
 import com.AoRGMapT.ReclamationActivity;
@@ -70,7 +74,15 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
 //            holder.llOperation.setVisibility(View.VISIBLE);
 //        }
 
-        holder.tvWellNum.setText(item.getWellName());
+        if (!TextUtils.isEmpty(item.getWellName())) {
+            holder.tvWellNum.setVisibility(View.VISIBLE);
+            holder.tvWellNum.setText(item.getWellName());
+            holder.lbWellName.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvWellNum.setVisibility(View.GONE);
+            holder.lbWellName.setVisibility(View.INVISIBLE);
+        }
+
         holder.tvPlanClass.setText(item.getTaskType());
 
 
@@ -130,6 +142,15 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                 } else if ("成果验收".equals(item.getTaskType())) {
                     //成果验收
                     intent = new Intent(PlanAdapter.this.context, AchievementAcceptanceActivity.class);
+                } else if ("地调路线".equals(item.getTaskType())) {
+                    //成果验收
+                    intent = new Intent(PlanAdapter.this.context, LocalDispatchingRouteActivity.class);
+                } else if ("物化探".equals(item.getTaskType())) {
+                    //成果验收
+                    intent = new Intent(PlanAdapter.this.context, GeophysicalGeochemicalExplorationActivity.class);
+                } else if ("分析化验".equals(item.getTaskType())) {
+                    //成果验收
+                    intent = new Intent(PlanAdapter.this.context, AnalysisAssayActivity.class);
                 } else {
                     //废弃物处理
                     intent = new Intent(PlanAdapter.this.context, WasteDisposalActivity.class);
@@ -160,6 +181,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
         TextView tvDelete;
         //TextView tvUpdatePeople;
         TextView tvUpdateTime;
+        TextView lbWellName;
         View item;
 
         LinearLayout llOperation;
@@ -176,6 +198,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
             tvDelete = view.findViewById(R.id.tv_delete);
             llOperation = view.findViewById(R.id.ll_operation);
             tvUpdateTime = view.findViewById(R.id.tv_update_time);
+            lbWellName=view.findViewById(R.id.lb_well_name);
             //  tvUpdatePeople = view.findViewById(R.id.tv_update_people);
 
         }

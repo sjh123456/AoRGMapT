@@ -35,6 +35,7 @@
 
 
         <TextView
+            android:id="@+id/lb_well_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"

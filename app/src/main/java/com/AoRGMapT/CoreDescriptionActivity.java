@@ -62,7 +62,6 @@ public class CoreDescriptionActivity extends AppCompatActivity {
     private List<String> deleteImageList = new ArrayList<>();
     //当前的项目
     private PlanBean mPlanBean;
-
     //当前项目的id
     private String id;
     //本地的key

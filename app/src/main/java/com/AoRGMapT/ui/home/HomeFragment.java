@@ -48,6 +48,7 @@ public class HomeFragment extends Fragment {
 
     private HomeProjectAdapter adapter;
     private WorkProjectAdapter workProjectAdapter;
+    private WorkProjectAdapter adjustProjectAdapter;
 
     //分页
     private int pageSize = 20;
@@ -56,6 +57,8 @@ public class HomeFragment extends Fragment {
     private List<ProjectBean> mProjectBeans = new ArrayList<>();
 
     private List<WorkItemBean> workItemBeans = new ArrayList<>();
+
+    private List<WorkItemBean> adjustItemBeans = new ArrayList<>();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -221,6 +224,10 @@ public class HomeFragment extends Fragment {
         workProjectAdapter = new WorkProjectAdapter(workItemBeans, this.getContext());
         binding.workGrid.setAdapter(workProjectAdapter);
 
+        binding.adjustGrid.setLayoutManager(new GridLayoutManager(HomeFragment.this.getContext(), 5));
+        adjustProjectAdapter = new WorkProjectAdapter(adjustItemBeans, this.getContext());
+        binding.adjustGrid.setAdapter(adjustProjectAdapter);
+
         return root;
     }
 
@@ -254,6 +261,13 @@ public class HomeFragment extends Fragment {
         workItemBeans.add(bean12);
         workItemBeans.add(bean13);
 
+        WorkItemBean adjustItem1 = new WorkItemBean("地调路线", R.drawable.route);
+        WorkItemBean adjustItem2 = new WorkItemBean("物化探", R.drawable.analysis);
+        WorkItemBean adjustItem3 = new WorkItemBean("分析化验", R.drawable.assay);
+
+        adjustItemBeans.add(adjustItem1);
+        adjustItemBeans.add(adjustItem2);
+        adjustItemBeans.add(adjustItem3);
 
     }
 

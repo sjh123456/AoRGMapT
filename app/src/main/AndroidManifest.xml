@@ -33,6 +33,15 @@
         android:theme="@style/Theme.Design.Light.NoActionBar"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".LocalDispatchingRouteActivity"
+            android:exported="true" />
+        <activity
+            android:name=".GeophysicalGeochemicalExplorationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".AnalysisAssayActivity"
+            android:exported="true" />
+        <activity
             android:name=".PieChartActivity"
             android:exported="true" />
         <activity
@@ -110,8 +119,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-
     </application>
 
 </manifest>
