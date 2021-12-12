@@ -32,7 +32,7 @@ public class AnalysisAssayActivity extends AppCompatActivity {
     public final static String TAG = "AnalysisAssayActivity";
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private String[] sampleTypeArray = {"岩石", "泥浆", "原油", "天然气", "非烃气", "地层水", "其他"};
-    private String[] sampleSourceCategoryArray = {"一、井下", "二、浅地表", "三、槽", "四、浅井头", "五、坑", "六、探", "七、地表露"};
+    private String[] sampleSourceCategoryArray = {"井下", "浅地表", "槽", "浅井头", "坑", "探", "地表露"};
     private String[] coringMethodArray = {"岩屑", "井壁取心", "岩心"};
     //记录时间
     private EditText mEditTime;

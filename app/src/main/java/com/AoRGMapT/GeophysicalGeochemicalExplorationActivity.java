@@ -34,7 +34,7 @@ public class GeophysicalGeochemicalExplorationActivity extends AppCompatActivity
     private static final int DECIMAL_DIGITS = 2;//小数的位数
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private String[] workAreaTypeArray = {"地震工区", "重力工区", "磁法工区", "电法工区", "化探工区", "其他"};
-    private String[] workAreaCategoryArray = {"1、重", "2、磁", "3、电", "4、震", "5、化探", "6、其他"};
+    private String[] workAreaCategoryArray = {"重", "磁", "电", "震", "化探", "其他"};
     private String[] collectDataArray = {"是", "否"};
     //记录时间
     private EditText mEditTime;
