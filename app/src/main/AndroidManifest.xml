@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.AoRGMapT">
+    package="com.Acquisition.Data.Acquisition">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -23,7 +23,7 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".BaseApplication"
+        android:name="com.Acquisition.BaseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -33,67 +33,67 @@
         android:theme="@style/Theme.Design.Light.NoActionBar"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".LocalDispatchingRouteActivity"
+            android:name="com.Acquisition.LocalDispatchingRouteActivity"
             android:exported="true" />
         <activity
-            android:name=".GeophysicalGeochemicalExplorationActivity"
+            android:name="com.Acquisition.GeophysicalGeochemicalExplorationActivity"
             android:exported="true" />
         <activity
-            android:name=".AnalysisAssayActivity"
+            android:name="com.Acquisition.AnalysisAssayActivity"
             android:exported="true" />
         <activity
-            android:name=".PieChartActivity"
+            android:name="com.Acquisition.PieChartActivity"
             android:exported="true" />
         <activity
-            android:name=".ChartActivity"
+            android:name="com.Acquisition.ChartActivity"
             android:exported="true" />
         <activity
-            android:name=".WasteDisposalActivity"
+            android:name="com.Acquisition.WasteDisposalActivity"
             android:exported="true" />
         <activity
-            android:name=".ReclamationActivity"
+            android:name="com.Acquisition.ReclamationActivity"
             android:exported="true" />
         <activity
-            android:name=".AchievementAcceptanceActivity"
+            android:name="com.Acquisition.AchievementAcceptanceActivity"
             android:exported="true" />
         <activity
-            android:name=".FieldAcceptanceActivity"
+            android:name="com.Acquisition.FieldAcceptanceActivity"
             android:exported="true" />
         <activity
-            android:name=".QualityTestingActivity"
+            android:name="com.Acquisition.QualityTestingActivity"
             android:exported="true" />
         <activity
-            android:name=".FracturingTestActivity"
+            android:name="com.Acquisition.FracturingTestActivity"
             android:exported="true" />
         <activity
-            android:name=".CoreDescriptionActivity"
+            android:name="com.Acquisition.CoreDescriptionActivity"
             android:exported="true" />
         <activity
-            android:name=".SiteConstructionInputCollectionContentActivity"
+            android:name="com.Acquisition.SiteConstructionInputCollectionContentActivity"
             android:exported="true" />
         <activity
-            android:name=".SiteConstructionInputSiteDailyActivity"
+            android:name="com.Acquisition.SiteConstructionInputSiteDailyActivity"
             android:exported="true" />
         <activity
-            android:name=".FieldConstructionLoggingExplainActivity"
+            android:name="com.Acquisition.FieldConstructionLoggingExplainActivity"
             android:exported="true" />
         <activity
-            android:name=".FieldConstructionLoggingSiteDailyActivity"
+            android:name="com.Acquisition.FieldConstructionLoggingSiteDailyActivity"
             android:exported="true" />
         <activity
-            android:name=".SiteConstructionWellDrillingActivity"
+            android:name="com.Acquisition.SiteConstructionWellDrillingActivity"
             android:exported="true" />
         <activity
-            android:name=".CommencementAcceptanceActivity"
+            android:name="com.Acquisition.CommencementAcceptanceActivity"
             android:exported="true" />
         <activity
-            android:name=".WellSitePreparationActivity"
+            android:name="com.Acquisition.WellSitePreparationActivity"
             android:exported="true" />
         <activity
-            android:name=".WellLocationDeterminationActivity"
+            android:name="com.Acquisition.WellLocationDeterminationActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.Acquisition.MainActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -101,6 +101,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity> <!-- <meta-data -->
         <!-- android:name="Aorgmapt-Map" -->
         <!-- android:value="4218dd1333225423ac15c8e512636b71"/> -->
@@ -112,7 +113,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.AoRGMapT"
+            android:authorities="com.Acquisition"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
