@@ -92,6 +92,17 @@
         <activity
             android:name="com.Acquisition.WellLocationDeterminationActivity"
             android:exported="true" />
+
+        <activity
+            android:name="com.Acquisition.AnalysisTestActivity"
+            android:exported="true" />
+        <activity
+            android:name="com.Acquisition.WellSitePatrolInspectionActivity"
+            android:exported="true" />
+        <activity
+            android:name="com.Acquisition.DrillingReportActivity"
+            android:exported="true" />
+
         <activity
             android:name="com.Acquisition.MainActivity"
             android:exported="true"

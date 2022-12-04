@@ -260,6 +260,7 @@ public class AnalysisAssayActivity extends AppCompatActivity {
         bean.setAnalySistestUnit(analysis_test_unit.getText().toString());
         bean.setAnalySistestSate(analysis_test_date.getText().toString());
         bean.setSampleSender(sample_sender.getText().toString());
+
         return bean;
     }
 
@@ -297,7 +298,6 @@ public class AnalysisAssayActivity extends AppCompatActivity {
                         break;
                     }
                 }
-                bean.setCoringMethod(coringMethodArray[coringMethodIndex]);
                 sample_field_number.setText(bean.getSampleFieldNumber());
                 well_section.setText(bean.getWellSection());
                 topic_name.setText(bean.getTopicName());
@@ -398,12 +398,12 @@ public class AnalysisAssayActivity extends AppCompatActivity {
         //设置下拉框的数组适配器
         coring_method.setAdapter(coringMethodAdapter);
         //设置下拉框默认的显示第一项
-        coring_method.setSelection(sampleSourceCategoryIndex);
+        coring_method.setSelection(coringMethodIndex);
         //给下拉框设置选择监听器，一旦用户选中某一项，就触发监听器的onItemSelected方法
         coring_method.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                sampleSourceCategoryIndex = position;
+                coringMethodIndex = position;
             }
 
             @Override

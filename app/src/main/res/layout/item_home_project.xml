@@ -20,7 +20,7 @@
             android:layout_weight="2"
             android:text="项目1开井测试"
             android:textColor="@color/black"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tv_com_num"
@@ -31,7 +31,7 @@
             android:text="20"
             android:gravity="center"
             android:textColor="#8FBC8F"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tv_imcom_num"
@@ -42,7 +42,7 @@
             android:layout_marginRight="20dp"
             android:text="20"
             android:textColor="#A52A2A"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
     </LinearLayout>
 
     <View

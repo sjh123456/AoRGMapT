@@ -96,6 +96,18 @@ public class HomeFragment extends Fragment {
                             Toast.makeText(HomeFragment.this.getContext(), "下拉刷新", Toast.LENGTH_SHORT).show();
                             //更新项目列表
                             BaseApplication.projectBeanList = mProjectBeans;
+                            if (BaseApplication.currentProject != null && mProjectBeans != null) {
+                                for (ProjectBean bean : mProjectBeans) {
+                                    if (TextUtils.equals(BaseApplication.currentProject.getProjectId(), bean.getProjectId())) {
+                                        BaseApplication.currentProject = bean;
+                                        break;
+                                    }
+                                }
+                                binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
+                                //显示当前项目信息
+                                binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
+                                binding.waitNum.setText(BaseApplication.currentProject.getTaskLocalCount() + "");
+                            }
                         } catch (Exception ex) {
                             Log.e(TAG, "数据解析失败");
                         }
@@ -112,6 +124,7 @@ public class HomeFragment extends Fragment {
                                     BaseApplication.projectBeanDetailList.clear();
                                     BaseApplication.projectBeanDetailList.addAll(projectResponseData.getData().getRecords());
                                     setProjectTaskCount();
+
 
                                 }
                             }
@@ -154,6 +167,7 @@ public class HomeFragment extends Fragment {
 //                                binding.lingrefresh.setEnableLoadmore(false);
 //                            }
                             BaseApplication.projectBeanList = mProjectBeans;
+
                         } catch (Exception ex) {
                             Log.e(TAG, "数据解析失败");
                         }
@@ -244,6 +258,9 @@ public class HomeFragment extends Fragment {
         WorkItemBean bean11 = new WorkItemBean("成果验收", R.drawable.achievement);
         WorkItemBean bean12 = new WorkItemBean("复耕复垦", R.drawable.reclamation);
         WorkItemBean bean13 = new WorkItemBean("废物处理", R.drawable.disposal);
+        WorkItemBean bean14 = new WorkItemBean("钻井日报", R.drawable.daily);
+        WorkItemBean bean15 = new WorkItemBean("井场巡检", R.drawable.inspection);
+        WorkItemBean bean16 = new WorkItemBean("分析测试", R.drawable.dataanalysis);
 
         workItemBeans.add(bean1);
         workItemBeans.add(bean2);
@@ -258,6 +275,10 @@ public class HomeFragment extends Fragment {
         workItemBeans.add(bean11);
         workItemBeans.add(bean12);
         workItemBeans.add(bean13);
+        workItemBeans.add(bean14);
+        workItemBeans.add(bean15);
+        workItemBeans.add(bean16);
+
 
         WorkItemBean adjustItem1 = new WorkItemBean("地调路线", R.drawable.route);
         WorkItemBean adjustItem2 = new WorkItemBean("物化探", R.drawable.analysis);
@@ -279,13 +300,23 @@ public class HomeFragment extends Fragment {
                     getLocaProjectPlanSize();
                     adapter.notifyDataSetChanged();
                     BaseApplication.projectBeanList = mProjectBeans;
-                    if (BaseApplication.currentProject == null && mProjectBeans != null && mProjectBeans.size() > 0) {
-                        BaseApplication.currentProject = mProjectBeans.get(0);
-                        binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
-                        //显示当前项目信息
-                        binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
-                        binding.waitNum.setText(BaseApplication.currentProject.getTaskLocalCount() + "");
+                    if (mProjectBeans != null && mProjectBeans.size() > 0) {
+                        if (BaseApplication.currentProject == null) {
+                            BaseApplication.currentProject = mProjectBeans.get(0);
+                        } else {
+                            for (ProjectBean bean : mProjectBeans) {
+                                if (TextUtils.equals(BaseApplication.currentProject.getProjectId(), bean.getProjectId())) {
+                                    BaseApplication.currentProject = bean;
+                                    break;
+                                }
+                            }
+                        }
                     }
+                    binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
+                    //显示当前项目信息
+                    binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
+                    binding.waitNum.setText(BaseApplication.currentProject.getTaskLocalCount() + "");
+
                     DataAcquisitionUtil.getInstance().fieldPlanProject(pageSize, current, new RequestUtil.OnResponseListener<ProjectResponseData>() {
                         @Override
                         public void onsuccess(ProjectResponseData projectResponseData) {
@@ -344,6 +375,7 @@ public class HomeFragment extends Fragment {
             //显示当前项目信息
             binding.tvProjectName.setText(BaseApplication.currentProject.getProjectName());
             binding.alreadyDoneNum.setText(BaseApplication.currentProject.getTaskCount() + "");
+            binding.waitNum.setText(BaseApplication.currentProject.getTaskLocalCount() + "");
         }
     }
 

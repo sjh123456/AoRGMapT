@@ -15,8 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.Acquisition.AchievementAcceptanceActivity;
 import com.Acquisition.AnalysisAssayActivity;
+import com.Acquisition.AnalysisTestActivity;
 import com.Acquisition.CommencementAcceptanceActivity;
 import com.Acquisition.CoreDescriptionActivity;
+import com.Acquisition.DrillingReportActivity;
 import com.Acquisition.FieldAcceptanceActivity;
 import com.Acquisition.FieldConstructionLoggingExplainActivity;
 import com.Acquisition.FieldConstructionLoggingSiteDailyActivity;
@@ -31,6 +33,7 @@ import com.Acquisition.SiteConstructionInputSiteDailyActivity;
 import com.Acquisition.SiteConstructionWellDrillingActivity;
 import com.Acquisition.WasteDisposalActivity;
 import com.Acquisition.WellLocationDeterminationActivity;
+import com.Acquisition.WellSitePatrolInspectionActivity;
 import com.Acquisition.WellSitePreparationActivity;
 import com.Acquisition.bean.WorkItemBean;
 import com.Acquisition.util.ChooseModeDialog;
@@ -124,8 +127,14 @@ public class WorkProjectAdapter extends RecyclerView.Adapter<WorkProjectAdapter.
                     intent = new Intent(WorkProjectAdapter.this.mContext, GeophysicalGeochemicalExplorationActivity.class);
                 } else if (TextUtils.equals("分析化验", item.getName())) {
                     intent = new Intent(WorkProjectAdapter.this.mContext, AnalysisAssayActivity.class);
+                }else if (TextUtils.equals("钻井日报", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, DrillingReportActivity.class);
+                }else if (TextUtils.equals("井场巡检", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, WellSitePatrolInspectionActivity.class);
+                }else if (TextUtils.equals("分析测试", item.getName())) {
+                    intent = new Intent(WorkProjectAdapter.this.mContext, AnalysisTestActivity.class);
                 } else {
-                    intent = new Intent(WorkProjectAdapter.this.mContext, WasteDisposalActivity.class);
+                    intent = new Intent(WorkProjectAdapter.this.mContext, AnalysisTestActivity.class);
                 }
                 WorkProjectAdapter.this.mContext.startActivity(intent);
             }

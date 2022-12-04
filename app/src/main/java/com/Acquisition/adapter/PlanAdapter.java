@@ -15,8 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.Acquisition.AchievementAcceptanceActivity;
 import com.Acquisition.AnalysisAssayActivity;
+import com.Acquisition.AnalysisTestActivity;
 import com.Acquisition.CommencementAcceptanceActivity;
 import com.Acquisition.CoreDescriptionActivity;
+import com.Acquisition.DrillingReportActivity;
 import com.Acquisition.FieldAcceptanceActivity;
 import com.Acquisition.FieldConstructionLoggingExplainActivity;
 import com.Acquisition.FieldConstructionLoggingSiteDailyActivity;
@@ -31,6 +33,7 @@ import com.Acquisition.SiteConstructionInputSiteDailyActivity;
 import com.Acquisition.SiteConstructionWellDrillingActivity;
 import com.Acquisition.WasteDisposalActivity;
 import com.Acquisition.WellLocationDeterminationActivity;
+import com.Acquisition.WellSitePatrolInspectionActivity;
 import com.Acquisition.WellSitePreparationActivity;
 import com.Acquisition.bean.PlanBean;
 
@@ -143,14 +146,23 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
                     //成果验收
                     intent = new Intent(PlanAdapter.this.context, AchievementAcceptanceActivity.class);
                 } else if ("地调路线".equals(item.getTaskType())) {
-                    //成果验收
+                    //地调路线
                     intent = new Intent(PlanAdapter.this.context, LocalDispatchingRouteActivity.class);
                 } else if ("物化探".equals(item.getTaskType())) {
-                    //成果验收
+                    //物化探
                     intent = new Intent(PlanAdapter.this.context, GeophysicalGeochemicalExplorationActivity.class);
                 } else if ("分析化验".equals(item.getTaskType())) {
-                    //成果验收
+                    //分析化验
                     intent = new Intent(PlanAdapter.this.context, AnalysisAssayActivity.class);
+                }else if ("钻井日报".equals(item.getTaskType())) {
+                    //钻井日报
+                    intent = new Intent(PlanAdapter.this.context, DrillingReportActivity.class);
+                }else if ("井场巡检".equals(item.getTaskType())) {
+                    //井场巡检
+                    intent = new Intent(PlanAdapter.this.context, WellSitePatrolInspectionActivity.class);
+                }else if ("分析测试".equals(item.getTaskType())) {
+                    //分析化验
+                    intent = new Intent(PlanAdapter.this.context, AnalysisTestActivity.class);
                 } else {
                     //废弃物处理
                     intent = new Intent(PlanAdapter.this.context, WasteDisposalActivity.class);

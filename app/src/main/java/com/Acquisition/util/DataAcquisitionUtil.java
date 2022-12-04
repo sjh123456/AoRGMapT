@@ -37,7 +37,7 @@ public class DataAcquisitionUtil {
     private final String authorization = "Basic YXVpX2NyZWRpYmxlXzAxOmF1aV9jcmVkaWJsZV9zZWNyZXQwMQ==";
     private final String AUTHORIZATION = "Authorization";
     private final String XACCESSTOKEN = "X-Access-Token";
-    private final String BASEURL = "http://219.142.81.65:8081/blade-system";
+    private final String BASEURL = "http://152.136.191.197:80/blade-system";
 
     private String TAG = "DataAcquisitionUtil";
 
